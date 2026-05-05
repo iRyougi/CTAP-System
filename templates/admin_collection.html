@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}收集控制 — 研究后台{% endblock %}
+
+{% block head %}
+<style>
+  .sec-title { font-size:.78rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.07em; margin-bottom:1rem; }
+  .ctrl-card  { background:var(--bg-elevated); border:1px solid var(--border); border-radius:10px; padding:1.1rem 1.3rem; margin-bottom:1rem; }
+  .ctrl-label { font-size:.73rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.75rem; }
+  .ctrl-note  { font-weight:400; text-transform:none; color:var(--text-faint); }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="page-wrap--wide" style="max-width:700px;">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.8rem;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <div class="badge badge-green" style="margin-bottom:.4rem;">收集控制</div>
+      <h1 style="font-size:1.5rem;">问卷收集控制</h1>
+    </div>
+    <a href="/admin/dashboard" class="btn btn-ghost btn-sm">← 返回后台</a>
+  </div>
+
+  <!-- Status -->
+  <div class="card" style="margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;
+    border-color:{% if collection.is_open %}rgba(63,185,80,.4){% else %}rgba(248,81,73,.4){% endif %};">
+    <div>
+      <div class="sec-title" style="margin-bottom:.2rem;">当前状态</div>
+      <div style="font-size:1.15rem;font-weight:700;color:{% if collection.is_open %}var(--accent-green){% else %}var(--accent-red){% endif %};">
+        {% if collection.is_open %}
+          ● 收集中
+        {% else %}
+          ■ 已停止{% if collection.reason == 'quota' %} — 已达配额（{{ collection.total }} 份）{% elif collection.reason == 'deadline' %} — 已过截止时间{% else %} — 手动停止{% endif %}
+        {% endif %}
+      </div>
+    </div>
+    <div style="font-size:.85rem;color:var(--text-muted);">
+      已收集 <span style="font-size:1.2rem;font-weight:700;color:var(--text-primary);">{{ collection.total }}</span> 份回复
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec-title">停止收集的触发条件（任一满足即停止）</div>
+
+    <!-- ① Manual -->
+    <div class="ctrl-card">
+      <div class="ctrl-label">① 手动控制</div>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
+        <button id="btn-open" class="btn btn-sm {% if collection.manual_open %}btn-success{% else %}btn-ghost{% endif %}"
+          onclick="setManual(true)">● 开放收集</button>
+        <button id="btn-stop" class="btn btn-sm {% if not collection.manual_open %}btn-danger{% else %}btn-ghost{% endif %}"
+          onclick="setManual(false)">■ 停止收集</button>
+      </div>
+    </div>
+
+    <!-- ② Quota -->
+    <div class="ctrl-card">
+      <div class="ctrl-label">② 配额限制 <span class="ctrl-note">— 达到指定份数后自动停止</span></div>
+      <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:.45rem;cursor:pointer;margin-bottom:0;font-size:.9rem;">
+          <input type="checkbox" id="quota-enabled" style="width:auto;margin:0;"
+            {% if collection.quota %}checked{% endif %} onchange="toggleQuota()"> 启用
+        </label>
+        <input type="number" id="quota-val" min="1" max="99999" style="width:120px;"
+          value="{{ collection.quota or '' }}" placeholder="份数上限"
+          {% if not collection.quota %}disabled{% endif %}>
+        <span style="font-size:.83rem;color:var(--text-muted);">
+          当前 <b style="color:var(--text-primary);">{{ collection.total }}</b>
+          {% if collection.quota %} / {{ collection.quota }} 份{% endif %}
+        </span>
+      </div>
+    </div>
+
+    <!-- ③ Deadline -->
+    <div class="ctrl-card">
+      <div class="ctrl-label">③ 截止时间 <span class="ctrl-note">— 到达指定时间后自动停止（北京时间）</span></div>
+      <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:.45rem;cursor:pointer;margin-bottom:0;font-size:.9rem;">
+          <input type="checkbox" id="deadline-enabled" style="width:auto;margin:0;"
+            {% if collection.deadline %}checked{% endif %} onchange="toggleDeadline()"> 启用
+        </label>
+        <input type="datetime-local" id="deadline-val" style="width:auto;"
+          value="{{ collection.deadline or '' }}"
+          {% if not collection.deadline %}disabled{% endif %}>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:.75rem;margin-top:.5rem;">
+      <button class="btn btn-primary" onclick="saveCollection()">保存设置</button>
+      <span id="coll-msg" style="font-size:.87rem;display:none;"></span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let collManualOpen = {{ 'true' if collection.manual_open else 'false' }};
+
+function setManual(open) {
+  collManualOpen = open;
+  document.getElementById('btn-open').className = 'btn btn-sm ' + (open  ? 'btn-success' : 'btn-ghost');
+  document.getElementById('btn-stop').className = 'btn btn-sm ' + (!open ? 'btn-danger'  : 'btn-ghost');
+}
+function toggleQuota() {
+  const on = document.getElementById('quota-enabled').checked;
+  const inp = document.getElementById('quota-val');
+  inp.disabled = !on;
+  if (!on) inp.value = '';
+}
+function toggleDeadline() {
+  const on = document.getElementById('deadline-enabled').checked;
+  const inp = document.getElementById('deadline-val');
+  inp.disabled = !on;
+  if (!on) inp.value = '';
+}
+function saveCollection() {
+  const quotaOn     = document.getElementById('quota-enabled').checked;
+  const quotaVal    = document.getElementById('quota-val').value.trim();
+  const deadlineOn  = document.getElementById('deadline-enabled').checked;
+  const deadlineVal = document.getElementById('deadline-val').value.trim();
+  const msg = document.getElementById('coll-msg');
+
+  fetch('/admin/collection', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      manual_open: collManualOpen,
+      quota:    quotaOn && quotaVal ? parseInt(quotaVal, 10) : null,
+      deadline: deadlineOn && deadlineVal ? deadlineVal : '',
+    })
+  }).then(r => r.json()).then(d => {
+    const reasons = { quota:'已达配额', deadline:'已过截止时间', manual:'手动停止' };
+    msg.style.cssText = `display:inline;color:${d.is_open ? 'var(--accent-green)' : 'var(--accent-red)'};`;
+    msg.textContent = d.is_open ? '已保存 — 当前收集中' : ('已保存 — 已停止' + (d.reason ? '（' + reasons[d.reason] + '）' : ''));
+    setTimeout(() => location.reload(), 1000);
+  }).catch(() => {
+    msg.style.cssText = 'display:inline;color:var(--accent-red);';
+    msg.textContent = '网络错误，请重试';
+    msg.style.display = 'inline';
+  });
+}
+</script>
+{% endblock %}

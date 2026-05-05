@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}管理员登录 — 研究后台{% endblock %}
+{% block body %}
+<div class="page-wrap" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;">
+  <div style="width:100%;max-width:400px;">
+    <div style="text-align:center;margin-bottom:2rem;">
+      <div class="badge badge-purple" style="margin-bottom:.8rem;">研究管理后台</div>
+      <h1 style="font-size:1.6rem;">管理员入口</h1>
+    </div>
+    <div class="card">
+      {% if error %}<div class="alert alert-error" style="margin-bottom:1.2rem;">{{ error }}</div>{% endif %}
+      <form method="POST" action="/admin/auth">
+        <div style="margin-bottom:1.2rem;">
+          <label for="pw">访问密码</label>
+          <input type="password" id="pw" name="password" placeholder="请输入管理密码" autofocus autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn btn-primary w-full">进入后台</button>
+      </form>
+    </div>
+    <p class="muted text-center" style="margin-top:1.2rem;font-size:.82rem;"><a href="mailto:iryougi@iryougi.com" style="color:inherit;text-decoration:underline;text-underline-offset:3px;">CTAP Project · Group 12</a> · 仅限研究团队访问</p>
+  </div>
+</div>
+{% endblock %}

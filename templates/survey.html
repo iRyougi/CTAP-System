@@ -1,0 +1,494 @@
+{% extends "base.html" %}
+{% block title %}任务简报 — 战场决策研究{% endblock %}
+
+{% block head %}
+<style>
+  #timer-wrap {
+    background: rgba(20,10,10,.72); border: 1px solid rgba(248,81,73,.45);
+    border-radius: 12px; padding: 1rem 1.4rem; margin-bottom: 1.4rem;
+    display: flex; align-items: center; gap: 1.2rem;
+    position: sticky; top: .5rem; z-index: 50;
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    box-shadow: 0 4px 20px rgba(0,0,0,.45);
+  }
+  #timer-number {
+    font-size: 2.6rem; font-weight: 700; color: var(--accent-red);
+    line-height: 1; min-width: 2.5ch; font-variant-numeric: tabular-nums;
+  }
+  #timer-bar-track { flex:1; height:8px; background:var(--bg-elevated); border-radius:4px; overflow:hidden; }
+  #timer-bar { height:100%; background:var(--accent-red); border-radius:4px; transition: width .9s linear, background .5s; }
+  .timer-urgent #timer-number { animation: pulse .7s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+  #decision-time-wrap {
+    background: rgba(88,166,255,.08); border: 1px solid rgba(88,166,255,.3);
+    border-radius: 12px; padding: .85rem 1.4rem; margin-bottom: 1.4rem;
+    display: flex; align-items: center; gap: .9rem;
+  }
+
+  .ai-box {
+    background: rgba(251,191,36,.07); border: 1px solid rgba(251,191,36,.3);
+    border-radius: 12px; padding: 1.1rem 1.4rem; margin-bottom: 1.4rem;
+  }
+  .ai-box-header {
+    display:flex; align-items:center; gap:.6rem; margin-bottom:.65rem;
+    font-size:.75rem; font-weight:700; color:var(--accent-amber);
+    text-transform:uppercase; letter-spacing:.07em;
+  }
+  .ai-dot { width:8px; height:8px; background:var(--accent-amber); border-radius:50%; animation:blink 1.8s ease-in-out infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+  .scenario-text {
+    font-size:1rem; line-height:1.95; color:var(--text-primary);
+    border-left:3px solid var(--accent-blue); padding-left:1.1rem; margin:1rem 0;
+  }
+
+  .q-card {
+    background:var(--bg-elevated); border:1px solid var(--border);
+    border-radius:12px; padding:1.4rem 1.6rem; margin-top:1.2rem; transition:border-color .2s;
+  }
+  .q-card.answered { border-color: rgba(63,185,80,.45); }
+  .q-card.locked   { opacity: .72; pointer-events: none; }
+  .q-num { font-size:.72rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.07em; margin-bottom:.5rem; }
+  .q-text { font-size:1rem; font-weight:500; margin-bottom:1rem; }
+  .q-optional { font-size:.78rem; color:var(--text-muted); font-weight:400; }
+
+  .binary-choice { display:flex; gap:.75rem; }
+  .choice-btn {
+    flex:1; padding:.8rem; border-radius:9px;
+    border:2px solid var(--border); background:var(--bg-surface);
+    color:var(--text-primary); font-family:inherit; font-size:1rem; font-weight:500;
+    cursor:pointer; text-align:center; transition:all .16s;
+  }
+  .choice-btn:hover:not(:disabled) { border-color:var(--accent-blue); background:rgba(88,166,255,.08); }
+  .choice-btn:disabled { cursor:not-allowed; }
+  .sel-yes  { border-color:var(--accent-red)  !important; background:rgba(248,81,73,.12)  !important; color:var(--accent-red)  !important; }
+  .sel-no   { border-color:var(--accent-green)!important; background:rgba(63,185,80,.12)  !important; color:var(--accent-green)!important; }
+  .sel-wyES { border-color:var(--accent-blue) !important; background:rgba(88,166,255,.12) !important; color:var(--accent-blue) !important; }
+  .sel-wyNO { border-color:var(--accent-amber)!important; background:rgba(251,191,36,.10) !important; color:var(--accent-amber)!important; }
+
+  .likert-wrap { display:flex; flex-direction:column; gap:.6rem; }
+  .likert-row  { display:flex; gap:.4rem; }
+  .likert-btn {
+    flex:1; min-width:0; padding:.62rem .15rem; border-radius:8px;
+    border:1.5px solid var(--border); background:var(--bg-surface);
+    color:var(--text-muted); font-family:inherit; font-size:.95rem; font-weight:600;
+    cursor:pointer; text-align:center; transition:all .15s;
+  }
+  .likert-btn:hover { border-color:var(--accent-blue); color:var(--text-primary); }
+  .likert-btn.selected { border-color:var(--accent-blue); background:rgba(88,166,255,.18); color:var(--accent-blue); }
+  .likert-labels { display:flex; justify-content:space-between; font-size:.74rem; color:var(--text-muted); padding:0 .1rem; }
+
+  .q-textarea {
+    width:100%; min-height:80px; resize:vertical;
+    background:var(--bg-surface); border:1px solid var(--border);
+    border-radius:8px; color:var(--text-primary); font-family:inherit;
+    font-size:.95rem; padding:.7rem .9rem; outline:none; transition:border-color .15s;
+  }
+  .q-textarea:focus { border-color:var(--accent-blue); box-shadow:0 0 0 3px rgba(88,166,255,.15); }
+
+  .case-progress { font-size:.78rem; color:var(--text-muted); margin-bottom:.3rem; }
+
+  #page2-section { display:none; }
+
+  #transition-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,.78);
+    backdrop-filter:blur(4px); z-index:200;
+    align-items:center; justify-content:center; flex-direction:column; gap:1rem;
+  }
+  #transition-overlay.show { display:flex; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  @media (max-width: 520px) {
+    .page-wrap { padding: 1rem .75rem 3rem; }
+    .card { padding: 1rem; }
+    .likert-row { flex-wrap: wrap; gap: .35rem; }
+    .likert-btn { flex: 1 1 calc(25% - .35rem); padding: .65rem .1rem; font-size: .9rem; }
+    .binary-choice { gap: .5rem; }
+    #timer-wrap { padding: .75rem 1rem; gap: .85rem; }
+    #timer-number { font-size: 2rem; }
+    .q-card { padding: 1rem; }
+  }
+
+  #submit-btn { margin-top:2rem; width:100%; font-size:1.05rem; padding:.9rem; }
+  #val-msg    { text-align:center; font-size:.88rem; color:var(--accent-red); margin-top:.6rem; display:none; }
+</style>
+{% endblock %}
+
+{% block body %}
+{% if has_ai %}
+  {% set _cond = case.ai_prob_condition if case else 'low' %}
+  {% set _ph = (case.prob_high if case and case.prob_high is not none else 0.85)|float %}
+  {% set _pl = (case.prob_low  if case and case.prob_low  is not none else 0.15)|float %}
+  {% set ai_prob_pct = ((_ph * 100)|round|int) if _cond == 'high' else ((_pl * 100)|round|int) %}
+  {% set ai_recommends_strike = true if _cond == 'high' else false %}
+{% endif %}
+<div class="page-wrap">
+
+  <!-- Header -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <div class="badge badge-red" style="margin-bottom:.5rem;">机密简报</div>
+      {% if total_cases > 1 %}
+      <div class="case-progress">情景 {{ case_num }} / {{ total_cases }}</div>
+      {% endif %}
+      <h1 style="font-size:1.5rem;">任务情报简报</h1>
+    </div>
+    <div style="text-align:right;font-size:.8rem;color:var(--text-muted);">
+      <div>参与者代码</div>
+      <div style="font-family:monospace;color:var(--text-primary);">{{ code }}</div>
+    </div>
+  </div>
+
+  <!-- ═══════ PAGE 1 ═══════ -->
+  <div id="page1-section">
+
+    {% if has_timer %}
+    <div id="timer-wrap">
+      <div>
+        <div style="font-size:.7rem;font-weight:700;color:var(--accent-red);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.25rem;">⚠ 决策时限</div>
+        <div id="timer-number">45</div>
+      </div>
+      <div style="flex:1;">
+        <div id="timer-bar-track"><div id="timer-bar" style="width:100%;"></div></div>
+        <div style="font-size:.8rem;color:var(--text-muted);margin-top:.4rem;">秒内必须做出决定</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.1rem;flex-wrap:wrap;">
+        <div class="badge badge-blue">战场情报</div>
+        {% if has_ai %}<div class="badge badge-amber">AI 辅助分析已激活</div>{% endif %}
+      </div>
+      <h2 style="margin-bottom:.4rem;">作战情景</h2>
+      {% if case %}<p style="font-size:.78rem;color:var(--text-muted);margin-bottom:.9rem;">{{ case.title }}</p>{% endif %}
+      <div class="scenario-text">{{ case.scenario_text if case else '（情景加载失败，请刷新页面）' }}</div>
+
+      {% if has_ai %}
+      <div class="ai-box">
+        <div class="ai-box-header"><div class="ai-dot"></div>AI 目标识别系统 — 实时分析结果</div>
+        <div style="display:flex;align-items:baseline;gap:.8rem;margin-bottom:.5rem;">
+          <span style="font-size:1.5rem;font-weight:700;color:var(--accent-amber);">{{ ai_prob_pct }}%</span>
+          <span style="color:var(--text-muted);font-size:.9rem;">目标置信度（敌方威胁）</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          {% if ai_recommends_strike %}
+          <div style="width:10px;height:10px;border-radius:50%;background:var(--accent-red);"></div>
+          <span style="font-weight:600;color:var(--accent-red);">AI 建议：批准打击</span>
+          {% else %}
+          <div style="width:10px;height:10px;border-radius:50%;background:var(--accent-green);"></div>
+          <span style="font-weight:600;color:var(--accent-green);">AI 建议：不批准打击</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;">
+        {% if group == 'A' %}
+          <p style="color:var(--text-muted);font-size:.95rem;">你可以根据现有情报进行判断。请回答以下问题做出决定。</p>
+        {% elif group == 'B' %}
+          <p style="color:var(--text-muted);font-size:.95rem;">以上 AI 分析结果供参考。请回答以下问题做出决定。</p>
+        {% elif group == 'C' %}
+          <p style="color:var(--accent-red);font-size:.95rem;font-weight:500;">⚠ 局势紧急，你必须在 45 秒内做出决定，立即判断是否批准打击。</p>
+          <p style="color:var(--text-muted);font-size:.88rem;margin-top:.5rem;">如果 45 秒内未作答，系统将记录为"未能及时决策"。</p>
+        {% elif group == 'D' %}
+          <p style="color:var(--accent-red);font-size:.95rem;font-weight:500;">⚠ 局势紧急，参考以上 AI 分析，你必须在 45 秒内做出决定，立即判断是否批准打击。</p>
+          <p style="color:var(--text-muted);font-size:.88rem;margin-top:.5rem;">如果 45 秒内未作答，系统将记录为"未能及时决策"。</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <h2 style="margin-bottom:.3rem;">第一步：做出决定</h2>
+      <p class="muted" style="margin-bottom:1.5rem;">选择后将自动进入下一步，无法更改。</p>
+      <div class="q-card" id="q1-card">
+        <div class="q-num">问题 1</div>
+        <div class="q-text">你是否批准打击？</div>
+        <div class="binary-choice">
+          <button type="button" class="choice-btn" id="q1-yes" onclick="selectPage1(1)">是</button>
+          <button type="button" class="choice-btn" id="q1-no"  onclick="selectPage1(0)">否</button>
+        </div>
+      </div>
+      <div id="p1-advancing" style="display:none;text-align:center;color:var(--accent-blue);font-size:.9rem;margin-top:1.2rem;padding:.75rem;">
+        决策已记录，正在进入下一步…
+      </div>
+    </div>
+
+  </div><!-- /page1-section -->
+
+
+  <!-- ═══════ PAGE 2 ═══════ -->
+  <div id="page2-section">
+
+    {% if has_timer %}
+    <div id="decision-time-wrap">
+      <div style="font-size:1.4rem;">⏱</div>
+      <div>
+        <div style="font-size:.7rem;font-weight:700;color:var(--accent-blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.2rem;">打击决策用时</div>
+        <div id="decision-time-display" style="font-size:1.1rem;font-weight:700;color:var(--text-primary);">—</div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.1rem;flex-wrap:wrap;">
+        <div class="badge badge-blue">战场情报</div>
+        {% if has_ai %}<div class="badge badge-amber">AI 辅助分析已激活</div>{% endif %}
+        <div class="badge badge-green">决策已锁定</div>
+      </div>
+      <h2 style="margin-bottom:.4rem;">作战情景</h2>
+      {% if case %}<p style="font-size:.78rem;color:var(--text-muted);margin-bottom:.9rem;">{{ case.title }}</p>{% endif %}
+      <div class="scenario-text">{{ case.scenario_text if case else '（情景加载失败，请刷新页面）' }}</div>
+
+      {% if has_ai %}
+      <div class="ai-box">
+        <div class="ai-box-header"><div class="ai-dot"></div>AI 目标识别系统 — 实时分析结果</div>
+        <div style="display:flex;align-items:baseline;gap:.8rem;margin-bottom:.5rem;">
+          <span style="font-size:1.5rem;font-weight:700;color:var(--accent-amber);">{{ ai_prob_pct }}%</span>
+          <span style="color:var(--text-muted);font-size:.9rem;">目标置信度（敌方威胁）</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          {% if ai_recommends_strike %}
+          <div style="width:10px;height:10px;border-radius:50%;background:var(--accent-red);"></div>
+          <span style="font-weight:600;color:var(--accent-red);">AI 建议：批准打击</span>
+          {% else %}
+          <div style="width:10px;height:10px;border-radius:50%;background:var(--accent-green);"></div>
+          <span style="font-weight:600;color:var(--accent-green);">AI 建议：不批准打击</span>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;">
+        <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.4rem;">你的打击决定（已锁定）</div>
+        <div id="locked-decision-text" style="font-weight:600;font-size:1.05rem;"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:1.5rem;">
+      <h2 style="margin-bottom:.3rem;">第二步：补充评估</h2>
+      <p class="muted" style="margin-bottom:1.5rem;">请根据情景中的真实判断作答，没有对错之分。除特别标注外均为必答。</p>
+
+      <div class="q-card" id="q2-card">
+        <div class="q-num">问题 2 / {{ 5 if has_ai else 4 }}</div>
+        <div class="q-text">假设你刚才的选择造成了严重后果，例如误伤平民，你觉得这在多大程度上是你的责任？</div>
+        <div class="likert-wrap">
+          <div class="likert-row">{% for i in range(1,8) %}<button type="button" class="likert-btn" data-q="q2" data-v="{{ i }}" onclick="setLikert('q2',{{ i }})">{{ i }}</button>{% endfor %}</div>
+          <div class="likert-labels"><span>完全没有责任</span><span>完全有责任</span></div>
+        </div>
+      </div>
+
+      <div class="q-card" id="q3-card">
+        <div class="q-num">问题 3 / {{ 5 if has_ai else 4 }}</div>
+        <div class="q-text">你对这个决定有多大信心？</div>
+        <div class="likert-wrap">
+          <div class="likert-row">{% for i in range(1,8) %}<button type="button" class="likert-btn" data-q="q3" data-v="{{ i }}" onclick="setLikert('q3',{{ i }})">{{ i }}</button>{% endfor %}</div>
+          <div class="likert-labels"><span>完全没信心</span><span>非常有信心</span></div>
+        </div>
+      </div>
+
+      {% if has_ai %}
+      <div class="q-card" id="q4-card">
+        <div class="q-num">问题 4 / 5</div>
+        <div class="q-text">你认为 AI 建议在多大程度上影响了你的判断？</div>
+        <div class="likert-wrap">
+          <div class="likert-row">{% for i in range(1,8) %}<button type="button" class="likert-btn" data-q="q4" data-v="{{ i }}" onclick="setLikert('q4',{{ i }})">{{ i }}</button>{% endfor %}</div>
+          <div class="likert-labels"><span>完全没有影响</span><span>影响很大</span></div>
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="q-card" id="q5-card">
+        <div class="q-num">问题 {{ 5 if has_ai else 4 }} / {{ 5 if has_ai else 4 }}</div>
+        <div class="q-text">你是否愿意等待更多情报？</div>
+        <div class="binary-choice">
+          <button type="button" class="choice-btn" id="q5-yes" onclick="setWait(1)">是</button>
+          <button type="button" class="choice-btn" id="q5-no"  onclick="setWait(0)">否</button>
+        </div>
+      </div>
+
+      <!-- Optional: timeout reason, only shown when timed out -->
+      <div class="q-card" id="q6-card" style="display:none;">
+        <div class="q-num">附加问题 <span class="q-optional">（选填）</span></div>
+        <div class="q-text">为什么您未能及时作出决策？</div>
+        <textarea class="q-textarea" id="q6-input" placeholder="请简要说明原因（可留空）"></textarea>
+      </div>
+
+      <button id="submit-btn" class="btn btn-primary" onclick="doSubmit()" disabled>提交答案</button>
+      <div id="val-msg">请回答所有必填问题后再提交。</div>
+    </div>
+
+  </div><!-- /page2-section -->
+
+</div>
+
+<!-- Transition overlay -->
+<div id="transition-overlay">
+  <div style="width:48px;height:48px;border:3px solid rgba(88,166,255,.3);border-top-color:var(--accent-blue);border-radius:50%;animation:spin .8s linear infinite;"></div>
+  <div style="color:var(--text-primary);font-size:1rem;font-weight:500;">决策已记录，进入下一步…</div>
+</div>
+
+<script>
+const HAS_AI    = {{ 'true' if has_ai else 'false' }};
+const HAS_TIMER = {{ 'true' if has_timer else 'false' }};
+const CODE      = {{ code | tojson }};
+
+const p2ans      = { q2:null, q3:null, q4:null, q5:null };
+let page1Answer  = null;
+let page1TimeSec = null;
+let timedOut     = false;
+let page2StartMs = null;
+const p1StartMs  = Date.now();
+
+// ── Timer (CD groups only) ──────────────────────────
+{% if has_timer %}
+let sLeft = 45;
+const tNum  = document.getElementById('timer-number');
+const tBar  = document.getElementById('timer-bar');
+const tWrap = document.getElementById('timer-wrap');
+
+const ticker = setInterval(() => {
+  sLeft--;
+  tNum.textContent = sLeft;
+  tBar.style.width = (sLeft / 45 * 100) + '%';
+  if (sLeft <= 10) { tBar.style.background = '#ff6a60'; tWrap.classList.add('timer-urgent'); }
+  if (sLeft <= 5)  { tBar.style.background = '#ff3b30'; }
+  if (sLeft <= 0)  { clearInterval(ticker); handleTimeout(); }
+}, 1000);
+
+function handleTimeout() {
+  tNum.textContent = '0';
+  tBar.style.width = '0%';
+  document.getElementById('q1-yes').disabled = true;
+  document.getElementById('q1-no').disabled  = true;
+  document.getElementById('q1-card').classList.add('locked');
+  timedOut     = true;
+  page1Answer  = null;
+  page1TimeSec = 45;
+  setTimeout(advanceToPage2, 1200);
+}
+{% endif %}
+
+// ── Page 1 answer ───────────────────────────────────
+function selectPage1(v) {
+  if (page1Answer !== null) return;
+  {% if has_timer %}clearInterval(ticker);{% endif %}
+
+  page1Answer  = v;
+  page1TimeSec = (Date.now() - p1StartMs) / 1000;
+  timedOut     = false;
+
+  const yBtn = document.getElementById('q1-yes');
+  const nBtn = document.getElementById('q1-no');
+  yBtn.className = 'choice-btn' + (v === 1 ? ' sel-yes' : '');
+  nBtn.className = 'choice-btn' + (v === 0 ? ' sel-no'  : '');
+  yBtn.disabled = nBtn.disabled = true;
+  document.getElementById('q1-card').classList.add('answered', 'locked');
+  document.getElementById('p1-advancing').style.display = 'block';
+  setTimeout(advanceToPage2, 900);
+}
+
+// ── Advance to page 2 ───────────────────────────────
+function advanceToPage2() {
+  fetch(`/survey/${CODE}/page1`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      page1_answer: page1Answer,
+      page1_time_seconds: page1TimeSec,
+      timed_out: timedOut,
+    })
+  }).catch(() => {});
+
+  // Update page 2 decision-time display
+  {% if has_timer %}
+  const dtEl = document.getElementById('decision-time-display');
+  const wrap = document.getElementById('decision-time-wrap');
+  if (timedOut) {
+    dtEl.textContent = '未能及时决策（超时）';
+    dtEl.style.color = 'var(--accent-red)';
+    wrap.style.background   = 'rgba(248,81,73,.07)';
+    wrap.style.borderColor  = 'rgba(248,81,73,.4)';
+    document.getElementById('q6-card').style.display = 'block';
+  } else {
+    dtEl.textContent = page1TimeSec != null ? page1TimeSec.toFixed(1) + ' 秒' : '—';
+  }
+  {% endif %}
+
+  // Update locked decision display
+  const ldEl = document.getElementById('locked-decision-text');
+  if (timedOut) {
+    ldEl.textContent = '⚠ 超时未决策';
+    ldEl.style.color = 'var(--accent-red)';
+  } else if (page1Answer === 1) {
+    ldEl.textContent = '✓ 批准打击';
+    ldEl.style.color = 'var(--accent-red)';
+  } else {
+    ldEl.textContent = '✗ 不批准打击';
+    ldEl.style.color = 'var(--accent-green)';
+  }
+
+  document.getElementById('transition-overlay').classList.add('show');
+  setTimeout(() => {
+    document.getElementById('transition-overlay').classList.remove('show');
+    document.getElementById('page1-section').style.display = 'none';
+    document.getElementById('page2-section').style.display = 'block';
+    page2StartMs = Date.now();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 800);
+}
+
+// ── Page 2 answers ──────────────────────────────────
+function setLikert(q, v) {
+  p2ans[q] = v;
+  document.querySelectorAll(`[data-q="${q}"]`).forEach(b => b.classList.toggle('selected', +b.dataset.v === v));
+  document.getElementById(q + '-card').classList.add('answered');
+  chk();
+}
+function setWait(v) {
+  p2ans.q5 = v;
+  document.getElementById('q5-yes').className = 'choice-btn' + (v === 1 ? ' sel-wyES' : '');
+  document.getElementById('q5-no' ).className = 'choice-btn' + (v === 0 ? ' sel-wyNO' : '');
+  document.getElementById('q5-card').classList.add('answered');
+  chk();
+}
+function chk() {
+  const needed = HAS_AI ? ['q2','q3','q4','q5'] : ['q2','q3','q5'];
+  const ok = needed.every(k => p2ans[k] !== null);
+  document.getElementById('submit-btn').disabled = !ok;
+  if (ok) document.getElementById('val-msg').style.display = 'none';
+}
+
+function doSubmit() {
+  const needed = HAS_AI ? ['q2','q3','q4','q5'] : ['q2','q3','q5'];
+  if (needed.some(k => p2ans[k] === null)) {
+    document.getElementById('val-msg').style.display = 'block';
+    return;
+  }
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = '提交中…';
+
+  const payload = {
+    responsibility:    p2ans.q2,
+    confidence:        p2ans.q3,
+    wait_for_intel:    p2ans.q5,
+    time_taken_seconds: page2StartMs ? (Date.now() - page2StartMs) / 1000 : null,
+    timeout_reason:    (document.getElementById('q6-input') || {}).value || '',
+  };
+  if (HAS_AI) payload.ai_influence = p2ans.q4;
+
+  fetch(`/survey/${CODE}/submit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(r => r.json())
+  .then(d => {
+    if (d.redirect) { location.href = d.redirect; }
+    else { btn.disabled = false; btn.textContent = '提交答案'; alert(d.error || '提交失败，请重试'); }
+  })
+  .catch(() => { btn.disabled = false; btn.textContent = '提交答案'; alert('网络错误，请检查连接后重试。'); });
+}
+</script>
+{% endblock %}

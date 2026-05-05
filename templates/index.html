@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}战场指挥决策研究 — 参与者入口{% endblock %}
+
+{% block body %}
+<div class="page-wrap">
+
+  <div style="text-align:center; padding: 2rem 0 1.5rem;">
+    <div class="badge badge-purple" style="margin-bottom:1rem;">学术研究项目</div>
+    <h1 style="margin-bottom:.6rem;">战场指挥决策研究</h1>
+    <p class="muted">Human-AI Interaction in Military Command Decision-Making</p>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom:1.2rem;">研究说明</h2>
+    <p style="margin-bottom:1rem; line-height:1.85;">
+      本研究旨在探究不同信息条件下，指挥人员在战术决策过程中的判断模式。
+      您将阅读一段战场情景描述，并根据所给信息回答若干问题。
+    </p>
+    <p style="margin-bottom:1rem; line-height:1.85;">
+      本问卷所有情景均为<strong style="color:var(--accent-amber)">虚构的模拟场景</strong>，不涉及真实作战行动。
+      您的回答将匿名处理，仅用于学术研究目的。
+    </p>
+
+    <hr>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
+      <div style="background:var(--bg-elevated); border:1px solid var(--border); border-radius:10px; padding:1rem;">
+        <div style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.4rem;">预计用时</div>
+        <div style="font-size:1.25rem; font-weight:700; color:var(--accent-blue);">约 3 分钟</div>
+      </div>
+      <div style="background:var(--bg-elevated); border:1px solid var(--border); border-radius:10px; padding:1rem;">
+        <div style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.4rem;">问题数量</div>
+        <div style="font-size:1.25rem; font-weight:700; color:var(--accent-green);">4 — 5 题</div>
+      </div>
+      <div style="background:var(--bg-elevated); border:1px solid var(--border); border-radius:10px; padding:1rem;">
+        <div style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.4rem;">数据保护</div>
+        <div style="font-size:1.25rem; font-weight:700; color:var(--accent-amber);">完全匿名</div>
+      </div>
+    </div>
+
+    <div style="background:rgba(88,166,255,.07); border:1px solid rgba(88,166,255,.2); border-radius:10px; padding:1rem 1.2rem; margin-bottom:1.5rem;">
+      <p style="font-size:.88rem; color:var(--accent-blue); margin:0; line-height:1.7;">
+        ℹ&nbsp; 点击"开始参与"即表示您自愿参与本研究，并了解您可随时退出。
+        本研究已通过学术伦理审核，数据仅用于学术分析，不会对外公开个人信息。
+      </p>
+    </div>
+
+    <form method="POST" action="/start">
+      <button type="submit" class="btn btn-primary w-full" style="font-size:1.05rem; padding:.9rem;">
+        ▶&nbsp; 开始参与
+      </button>
+    </form>
+  </div>
+
+  <p class="muted text-center" style="margin-top:1.5rem; font-size:.82rem;">
+    如有问题请联系研究团队 &nbsp;|&nbsp; <a href="mailto:iryougi@iryougi.com" style="color:inherit;text-decoration:underline;text-underline-offset:3px;">CTAP Project &nbsp;·&nbsp; Group 12</a>
+  </p>
+
+</div>
+{% endblock %}

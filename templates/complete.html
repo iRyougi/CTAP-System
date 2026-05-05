@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}感谢参与 — 战场决策研究{% endblock %}
+
+{% block body %}
+<div class="page-wrap" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; text-align:center;">
+
+  {% if already_done %}
+    <div style="font-size:3.5rem; margin-bottom:1.2rem; opacity:.6;">🔒</div>
+    <div class="badge badge-amber" style="margin-bottom:1rem;">已提交</div>
+    <h1 style="margin-bottom:.8rem;">您已完成本次问卷</h1>
+    <p class="muted" style="max-width:460px; margin:0 auto; line-height:1.8;">
+      您的答案已被记录。每个访问码只能提交一次，如需协助请联系研究团队。
+    </p>
+  {% else %}
+    <div style="width:72px; height:72px; border-radius:50%; background:rgba(63,185,80,.15); border:2px solid rgba(63,185,80,.4); display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; font-size:2rem;">✓</div>
+    <div class="badge badge-green" style="margin-bottom:1rem;">提交成功</div>
+    <h1 style="margin-bottom:.9rem;">感谢您的参与！</h1>
+    <p style="max-width:500px; margin:0 auto 1.8rem; line-height:1.9; color:var(--text-muted);">
+      您的回答已成功记录。本研究将探究 AI 辅助系统对战场指挥决策的影响，
+      研究结果将用于改善人机协作决策系统的设计与评估。
+    </p>
+    <div style="background:var(--bg-surface); border:1px solid var(--border); border-radius:12px; padding:1.2rem 2rem; max-width:400px; width:100%;">
+      <p style="font-size:.88rem; color:var(--text-muted); line-height:1.75; margin-bottom:.8rem;">
+        如您希望了解本研究的最终结果，欢迎联系研究团队。
+      </p>
+      <p style="font-size:.82rem; color:var(--accent-blue);"><a href="mailto:iryougi@iryougi.com" style="color:inherit;text-decoration:underline;text-underline-offset:3px;">CTAP Project &nbsp;·&nbsp; Group 12</a></p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
