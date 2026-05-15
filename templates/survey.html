@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}任务简报 — 战场决策研究{% endblock %}
+{% block title %}{% if lang == 'en' %}Mission Brief — Battlefield Decision Study{% else %}任务简报 — 战场决策研究{% endif %}{% endblock %}
 
 {% block head %}
 <style>
@@ -128,14 +128,14 @@
   <!-- Header -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
     <div>
-      <div class="badge badge-red" style="margin-bottom:.5rem;">机密简报</div>
+      <div class="badge badge-red" style="margin-bottom:.5rem;">{% if lang == 'en' %}Classified Brief{% else %}机密简报{% endif %}</div>
       {% if total_cases > 1 %}
-      <div class="case-progress">情景 {{ case_num }} / {{ total_cases }}</div>
+      <div class="case-progress">{% if lang == 'en' %}Scenario {{ case_num }} / {{ total_cases }}{% else %}情景 {{ case_num }} / {{ total_cases }}{% endif %}</div>
       {% endif %}
-      <h1 style="font-size:1.5rem;">任务情报简报</h1>
+      <h1 style="font-size:1.5rem;">{% if lang == 'en' %}Mission Intelligence Brief{% else %}任务情报简报{% endif %}</h1>
     </div>
     <div style="text-align:right;font-size:.8rem;color:var(--text-muted);">
-      <div>参与者代码</div>
+      <div>{% if lang == 'en' %}Participant Code{% else %}参与者代码{% endif %}</div>
       <div style="font-family:monospace;color:var(--text-primary);">{{ code }}</div>
     </div>
   </div>
@@ -146,39 +146,39 @@
     {% if has_timer %}
     <div id="timer-wrap">
       <div>
-        <div style="font-size:.7rem;font-weight:700;color:var(--accent-red);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.25rem;">⚠ 决策时限</div>
+        <div style="font-size:.7rem;font-weight:700;color:var(--accent-red);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.25rem;">⚠ {% if lang == 'en' %}Time Limit{% else %}决策时限{% endif %}</div>
         <div id="timer-number">45</div>
       </div>
       <div style="flex:1;">
         <div id="timer-bar-track"><div id="timer-bar" style="width:100%;"></div></div>
-        <div style="font-size:.8rem;color:var(--text-muted);margin-top:.4rem;">秒内必须做出决定</div>
+        <div style="font-size:.8rem;color:var(--text-muted);margin-top:.4rem;">{% if lang == 'en' %}seconds to decide{% else %}秒内必须做出决定{% endif %}</div>
       </div>
     </div>
     {% endif %}
 
     <div class="card">
       <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.1rem;flex-wrap:wrap;">
-        <div class="badge badge-blue">战场情报</div>
-        {% if has_ai %}<div class="badge badge-amber">AI 辅助分析已激活</div>{% endif %}
+        <div class="badge badge-blue">{% if lang == 'en' %}Field Intelligence{% else %}战场情报{% endif %}</div>
+        {% if has_ai %}<div class="badge badge-amber">{% if lang == 'en' %}AI Analysis Active{% else %}AI 辅助分析已激活{% endif %}</div>{% endif %}
       </div>
-      <h2 style="margin-bottom:.4rem;">作战情景</h2>
+      <h2 style="margin-bottom:.4rem;">{% if lang == 'en' %}Combat Scenario{% else %}作战情景{% endif %}</h2>
       {% if case %}<p style="font-size:.78rem;color:var(--text-muted);margin-bottom:.9rem;">{{ case.title }}</p>{% endif %}
       <div class="scenario-text">{{ case.scenario_text if case else '（情景加载失败，请刷新页面）' }}</div>
 
       {% if has_ai %}
       <div class="ai-box">
-        <div class="ai-box-header"><div class="ai-dot"></div>AI 目标识别系统 — 实时分析结果</div>
+        <div class="ai-box-header"><div class="ai-dot"></div>{% if lang == 'en' %}AI Target Recognition System — Real-time Analysis{% else %}AI 目标识别系统 — 实时分析结果{% endif %}</div>
         <div style="display:flex;align-items:baseline;gap:.8rem;margin-bottom:.5rem;">
           <span style="font-size:1.5rem;font-weight:700;color:var(--accent-amber);">{{ ai_prob_pct }}%</span>
-          <span style="color:var(--text-muted);font-size:.9rem;">目标置信度（敌方威胁）</span>
+          <span style="color:var(--text-muted);font-size:.9rem;">{% if lang == 'en' %}Target Confidence (Hostile Threat){% else %}目标置信度（敌方威胁）{% endif %}</span>
         </div>
         <div style="display:flex;align-items:center;gap:.6rem;">
           {% if ai_recommends_strike %}
           <div style="width:10px;height:10px;border-radius:50%;background:var(--accent-red);"></div>
-          <span style="font-weight:600;color:var(--accent-red);">AI 建议：批准打击</span>
+          <span style="font-weight:600;color:var(--accent-red);">{% if lang == 'en' %}AI Recommendation: Approve Strike{% else %}AI 建议：批准打击{% endif %}</span>
           {% else %}
           <div style="width:10px;height:10px;border-radius:50%;background:var(--accent-green);"></div>
-          <span style="font-weight:600;color:var(--accent-green);">AI 建议：不批准打击</span>
+          <span style="font-weight:600;color:var(--accent-green);">{% if lang == 'en' %}AI Recommendation: Do Not Approve Strike{% else %}AI 建议：不批准打击{% endif %}</span>
           {% endif %}
         </div>
       </div>
@@ -186,32 +186,32 @@
 
       <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;">
         {% if group == 'A' %}
-          <p style="color:var(--text-muted);font-size:.95rem;">你可以根据现有情报进行判断。请回答以下问题做出决定。</p>
+          <p style="color:var(--text-muted);font-size:.95rem;">{% if lang == 'en' %}You may make your judgment based on available intelligence. Answer the question below to make your decision.{% else %}你可以根据现有情报进行判断。请回答以下问题做出决定。{% endif %}</p>
         {% elif group == 'B' %}
-          <p style="color:var(--text-muted);font-size:.95rem;">以上 AI 分析结果供参考。请回答以下问题做出决定。</p>
+          <p style="color:var(--text-muted);font-size:.95rem;">{% if lang == 'en' %}The AI analysis above is provided for reference. Answer the question below to make your decision.{% else %}以上 AI 分析结果供参考。请回答以下问题做出决定。{% endif %}</p>
         {% elif group == 'C' %}
-          <p style="color:var(--accent-red);font-size:.95rem;font-weight:500;">⚠ 局势紧急，你必须在 45 秒内做出决定，立即判断是否批准打击。</p>
-          <p style="color:var(--text-muted);font-size:.88rem;margin-top:.5rem;">如果 45 秒内未作答，系统将记录为"未能及时决策"。</p>
+          <p style="color:var(--accent-red);font-size:.95rem;font-weight:500;">{% if lang == 'en' %}⚠ The situation is urgent. You must decide within 45 seconds. Determine immediately whether to approve the strike.{% else %}⚠ 局势紧急，你必须在 45 秒内做出决定，立即判断是否批准打击。{% endif %}</p>
+          <p style="color:var(--text-muted);font-size:.88rem;margin-top:.5rem;">{% if lang == 'en' %}If no answer is given within 45 seconds, the system will record this as "failed to decide in time".{% else %}如果 45 秒内未作答，系统将记录为"未能及时决策"。{% endif %}</p>
         {% elif group == 'D' %}
-          <p style="color:var(--accent-red);font-size:.95rem;font-weight:500;">⚠ 局势紧急，参考以上 AI 分析，你必须在 45 秒内做出决定，立即判断是否批准打击。</p>
-          <p style="color:var(--text-muted);font-size:.88rem;margin-top:.5rem;">如果 45 秒内未作答，系统将记录为"未能及时决策"。</p>
+          <p style="color:var(--accent-red);font-size:.95rem;font-weight:500;">{% if lang == 'en' %}⚠ The situation is urgent. Referencing the AI analysis above, you must decide within 45 seconds whether to approve the strike.{% else %}⚠ 局势紧急，参考以上 AI 分析，你必须在 45 秒内做出决定，立即判断是否批准打击。{% endif %}</p>
+          <p style="color:var(--text-muted);font-size:.88rem;margin-top:.5rem;">{% if lang == 'en' %}If no answer is given within 45 seconds, the system will record this as "failed to decide in time".{% else %}如果 45 秒内未作答，系统将记录为"未能及时决策"。{% endif %}</p>
         {% endif %}
       </div>
     </div>
 
     <div class="card" style="margin-top:1.5rem;">
-      <h2 style="margin-bottom:.3rem;">第一步：做出决定</h2>
-      <p class="muted" style="margin-bottom:1.5rem;">选择后将自动进入下一步，无法更改。</p>
+      <h2 style="margin-bottom:.3rem;">{% if lang == 'en' %}Step 1: Make Your Decision{% else %}第一步：做出决定{% endif %}</h2>
+      <p class="muted" style="margin-bottom:1.5rem;">{% if lang == 'en' %}After selecting, you will proceed automatically and cannot change your answer.{% else %}选择后将自动进入下一步，无法更改。{% endif %}</p>
       <div class="q-card" id="q1-card">
-        <div class="q-num">问题 1</div>
-        <div class="q-text">你是否批准打击？</div>
+        <div class="q-num">{% if lang == 'en' %}Question 1{% else %}问题 1{% endif %}</div>
+        <div class="q-text">{% if lang == 'en' %}Do you approve the strike?{% else %}你是否批准打击？{% endif %}</div>
         <div class="binary-choice">
-          <button type="button" class="choice-btn" id="q1-yes" onclick="selectPage1(1)">是</button>
-          <button type="button" class="choice-btn" id="q1-no"  onclick="selectPage1(0)">否</button>
+          <button type="button" class="choice-btn" id="q1-yes" onclick="selectPage1(1)">{% if lang == 'en' %}Yes{% else %}是{% endif %}</button>
+          <button type="button" class="choice-btn" id="q1-no"  onclick="selectPage1(0)">{% if lang == 'en' %}No{% else %}否{% endif %}</button>
         </div>
       </div>
       <div id="p1-advancing" style="display:none;text-align:center;color:var(--accent-blue);font-size:.9rem;margin-top:1.2rem;padding:.75rem;">
-        决策已记录，正在进入下一步…
+        {% if lang == 'en' %}Decision recorded, proceeding to next step...{% else %}决策已记录，正在进入下一步…{% endif %}
       </div>
     </div>
 
@@ -225,7 +225,7 @@
     <div id="decision-time-wrap">
       <div style="font-size:1.4rem;">⏱</div>
       <div>
-        <div style="font-size:.7rem;font-weight:700;color:var(--accent-blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.2rem;">打击决策用时</div>
+        <div style="font-size:.7rem;font-weight:700;color:var(--accent-blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.2rem;">{% if lang == 'en' %}Strike Decision Time{% else %}打击决策用时{% endif %}</div>
         <div id="decision-time-display" style="font-size:1.1rem;font-weight:700;color:var(--text-primary);">—</div>
       </div>
     </div>
@@ -233,90 +233,90 @@
 
     <div class="card">
       <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.1rem;flex-wrap:wrap;">
-        <div class="badge badge-blue">战场情报</div>
-        {% if has_ai %}<div class="badge badge-amber">AI 辅助分析已激活</div>{% endif %}
-        <div class="badge badge-green">决策已锁定</div>
+        <div class="badge badge-blue">{% if lang == 'en' %}Field Intelligence{% else %}战场情报{% endif %}</div>
+        {% if has_ai %}<div class="badge badge-amber">{% if lang == 'en' %}AI Analysis Active{% else %}AI 辅助分析已激活{% endif %}</div>{% endif %}
+        <div class="badge badge-green">{% if lang == 'en' %}Decision Locked{% else %}决策已锁定{% endif %}</div>
       </div>
-      <h2 style="margin-bottom:.4rem;">作战情景</h2>
+      <h2 style="margin-bottom:.4rem;">{% if lang == 'en' %}Combat Scenario{% else %}作战情景{% endif %}</h2>
       {% if case %}<p style="font-size:.78rem;color:var(--text-muted);margin-bottom:.9rem;">{{ case.title }}</p>{% endif %}
       <div class="scenario-text">{{ case.scenario_text if case else '（情景加载失败，请刷新页面）' }}</div>
 
       {% if has_ai %}
       <div class="ai-box">
-        <div class="ai-box-header"><div class="ai-dot"></div>AI 目标识别系统 — 实时分析结果</div>
+        <div class="ai-box-header"><div class="ai-dot"></div>{% if lang == 'en' %}AI Target Recognition System — Real-time Analysis{% else %}AI 目标识别系统 — 实时分析结果{% endif %}</div>
         <div style="display:flex;align-items:baseline;gap:.8rem;margin-bottom:.5rem;">
           <span style="font-size:1.5rem;font-weight:700;color:var(--accent-amber);">{{ ai_prob_pct }}%</span>
-          <span style="color:var(--text-muted);font-size:.9rem;">目标置信度（敌方威胁）</span>
+          <span style="color:var(--text-muted);font-size:.9rem;">{% if lang == 'en' %}Target Confidence (Hostile Threat){% else %}目标置信度（敌方威胁）{% endif %}</span>
         </div>
         <div style="display:flex;align-items:center;gap:.6rem;">
           {% if ai_recommends_strike %}
           <div style="width:10px;height:10px;border-radius:50%;background:var(--accent-red);"></div>
-          <span style="font-weight:600;color:var(--accent-red);">AI 建议：批准打击</span>
+          <span style="font-weight:600;color:var(--accent-red);">{% if lang == 'en' %}AI Recommendation: Approve Strike{% else %}AI 建议：批准打击{% endif %}</span>
           {% else %}
           <div style="width:10px;height:10px;border-radius:50%;background:var(--accent-green);"></div>
-          <span style="font-weight:600;color:var(--accent-green);">AI 建议：不批准打击</span>
+          <span style="font-weight:600;color:var(--accent-green);">{% if lang == 'en' %}AI Recommendation: Do Not Approve Strike{% else %}AI 建议：不批准打击{% endif %}</span>
           {% endif %}
         </div>
       </div>
       {% endif %}
 
       <div style="background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;">
-        <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.4rem;">你的打击决定（已锁定）</div>
+        <div style="font-size:.78rem;color:var(--text-muted);margin-bottom:.4rem;">{% if lang == 'en' %}Your Strike Decision (Locked){% else %}你的打击决定（已锁定）{% endif %}</div>
         <div id="locked-decision-text" style="font-weight:600;font-size:1.05rem;"></div>
       </div>
     </div>
 
     <div class="card" style="margin-top:1.5rem;">
-      <h2 style="margin-bottom:.3rem;">第二步：补充评估</h2>
-      <p class="muted" style="margin-bottom:1.5rem;">请根据情景中的真实判断作答，没有对错之分。除特别标注外均为必答。</p>
+      <h2 style="margin-bottom:.3rem;">{% if lang == 'en' %}Step 2: Further Assessment{% else %}第二步：补充评估{% endif %}</h2>
+      <p class="muted" style="margin-bottom:1.5rem;">{% if lang == 'en' %}Answer based on your genuine judgment. There are no right or wrong answers. All questions are required unless marked optional.{% else %}请根据情景中的真实判断作答，没有对错之分。除特别标注外均为必答。{% endif %}</p>
 
       <div class="q-card" id="q2-card">
-        <div class="q-num">问题 2 / {{ 5 if has_ai else 4 }}</div>
-        <div class="q-text">假设你刚才的选择造成了严重后果，例如误伤平民，你觉得这在多大程度上是你的责任？</div>
+        <div class="q-num">{% if lang == 'en' %}Question 2 / {{ 5 if has_ai else 4 }}{% else %}问题 2 / {{ 5 if has_ai else 4 }}{% endif %}</div>
+        <div class="q-text">{% if lang == 'en' %}Assuming your choice led to serious consequences — such as civilian casualties or friendly losses — to what extent do you feel personally responsible?{% else %}假设你刚才的选择造成了严重后果，例如误伤平民或己方损失，你觉得这在多大程度上是你的责任？{% endif %}</div>
         <div class="likert-wrap">
           <div class="likert-row">{% for i in range(1,8) %}<button type="button" class="likert-btn" data-q="q2" data-v="{{ i }}" onclick="setLikert('q2',{{ i }})">{{ i }}</button>{% endfor %}</div>
-          <div class="likert-labels"><span>完全没有责任</span><span>完全有责任</span></div>
+          <div class="likert-labels"><span>{% if lang == 'en' %}Not at all responsible{% else %}完全没有责任{% endif %}</span><span>{% if lang == 'en' %}Fully responsible{% else %}完全有责任{% endif %}</span></div>
         </div>
       </div>
 
       <div class="q-card" id="q3-card">
-        <div class="q-num">问题 3 / {{ 5 if has_ai else 4 }}</div>
-        <div class="q-text">你对这个决定有多大信心？</div>
+        <div class="q-num">{% if lang == 'en' %}Question 3 / {{ 5 if has_ai else 4 }}{% else %}问题 3 / {{ 5 if has_ai else 4 }}{% endif %}</div>
+        <div class="q-text">{% if lang == 'en' %}How confident are you in this decision?{% else %}你对这个决定有多大信心？{% endif %}</div>
         <div class="likert-wrap">
           <div class="likert-row">{% for i in range(1,8) %}<button type="button" class="likert-btn" data-q="q3" data-v="{{ i }}" onclick="setLikert('q3',{{ i }})">{{ i }}</button>{% endfor %}</div>
-          <div class="likert-labels"><span>完全没信心</span><span>非常有信心</span></div>
+          <div class="likert-labels"><span>{% if lang == 'en' %}No confidence at all{% else %}完全没信心{% endif %}</span><span>{% if lang == 'en' %}Highly confident{% else %}非常有信心{% endif %}</span></div>
         </div>
       </div>
 
       {% if has_ai %}
       <div class="q-card" id="q4-card">
-        <div class="q-num">问题 4 / 5</div>
-        <div class="q-text">你认为 AI 建议在多大程度上影响了你的判断？</div>
+        <div class="q-num">{% if lang == 'en' %}Question 4 / 5{% else %}问题 4 / 5{% endif %}</div>
+        <div class="q-text">{% if lang == 'en' %}To what extent did the AI recommendation influence your judgment?{% else %}你认为 AI 建议在多大程度上影响了你的判断？{% endif %}</div>
         <div class="likert-wrap">
           <div class="likert-row">{% for i in range(1,8) %}<button type="button" class="likert-btn" data-q="q4" data-v="{{ i }}" onclick="setLikert('q4',{{ i }})">{{ i }}</button>{% endfor %}</div>
-          <div class="likert-labels"><span>完全没有影响</span><span>影响很大</span></div>
+          <div class="likert-labels"><span>{% if lang == 'en' %}No influence at all{% else %}完全没有影响{% endif %}</span><span>{% if lang == 'en' %}Strong influence{% else %}影响很大{% endif %}</span></div>
         </div>
       </div>
       {% endif %}
 
       <div class="q-card" id="q5-card">
-        <div class="q-num">问题 {{ 5 if has_ai else 4 }} / {{ 5 if has_ai else 4 }}</div>
-        <div class="q-text">你是否愿意等待更多情报？</div>
+        <div class="q-num">{% if lang == 'en' %}Question {{ 5 if has_ai else 4 }} / {{ 5 if has_ai else 4 }}{% else %}问题 {{ 5 if has_ai else 4 }} / {{ 5 if has_ai else 4 }}{% endif %}</div>
+        <div class="q-text">{% if lang == 'en' %}Would you be willing to wait for more intelligence?{% else %}你是否愿意等待更多情报？{% endif %}</div>
         <div class="binary-choice">
-          <button type="button" class="choice-btn" id="q5-yes" onclick="setWait(1)">是</button>
-          <button type="button" class="choice-btn" id="q5-no"  onclick="setWait(0)">否</button>
+          <button type="button" class="choice-btn" id="q5-yes" onclick="setWait(1)">{% if lang == 'en' %}Yes{% else %}是{% endif %}</button>
+          <button type="button" class="choice-btn" id="q5-no"  onclick="setWait(0)">{% if lang == 'en' %}No{% else %}否{% endif %}</button>
         </div>
       </div>
 
       <!-- Optional: timeout reason, only shown when timed out -->
       <div class="q-card" id="q6-card" style="display:none;">
-        <div class="q-num">附加问题 <span class="q-optional">（选填）</span></div>
-        <div class="q-text">为什么您未能及时作出决策？</div>
-        <textarea class="q-textarea" id="q6-input" placeholder="请简要说明原因（可留空）"></textarea>
+        <div class="q-num">{% if lang == 'en' %}Additional Question{% else %}附加问题{% endif %} <span class="q-optional">{% if lang == 'en' %}(Optional){% else %}（选填）{% endif %}</span></div>
+        <div class="q-text">{% if lang == 'en' %}Why were you unable to make a decision in time?{% else %}为什么您未能及时作出决策？{% endif %}</div>
+        <textarea class="q-textarea" id="q6-input" placeholder="{% if lang == 'en' %}Briefly explain (may be left blank){% else %}请简要说明原因（可留空）{% endif %}"></textarea>
       </div>
 
-      <button id="submit-btn" class="btn btn-primary" onclick="doSubmit()" disabled>提交答案</button>
-      <div id="val-msg">请回答所有必填问题后再提交。</div>
+      <button id="submit-btn" class="btn btn-primary" onclick="doSubmit()" disabled>{% if lang == 'en' %}Submit{% else %}提交答案{% endif %}</button>
+      <div id="val-msg">{% if lang == 'en' %}Please answer all required questions before submitting.{% else %}请回答所有必填问题后再提交。{% endif %}</div>
     </div>
 
   </div><!-- /page2-section -->
@@ -326,13 +326,26 @@
 <!-- Transition overlay -->
 <div id="transition-overlay">
   <div style="width:48px;height:48px;border:3px solid rgba(88,166,255,.3);border-top-color:var(--accent-blue);border-radius:50%;animation:spin .8s linear infinite;"></div>
-  <div style="color:var(--text-primary);font-size:1rem;font-weight:500;">决策已记录，进入下一步…</div>
+  <div style="color:var(--text-primary);font-size:1rem;font-weight:500;">{% if lang == 'en' %}Decision recorded, proceeding...{% else %}决策已记录，进入下一步…{% endif %}</div>
 </div>
 
 <script>
 const HAS_AI    = {{ 'true' if has_ai else 'false' }};
 const HAS_TIMER = {{ 'true' if has_timer else 'false' }};
 const CODE      = {{ code | tojson }};
+
+// Localised strings
+const L = {
+  timeoutLabel: {{ ('"Decision timed out"' if lang == 'en' else '"未能及时决策（超时）"') | safe }},
+  secUnit:      {{ ('" sec"' if lang == 'en' else '" 秒"') | safe }},
+  timedOut:     {{ ('"⚠ Timed Out — No Decision"' if lang == 'en' else '"⚠ 超时未决策"') | safe }},
+  approved:     {{ ('"✓ Strike Approved"' if lang == 'en' else '"✓ 批准打击"') | safe }},
+  rejected:     {{ ('"✗ Strike Not Approved"' if lang == 'en' else '"✗ 不批准打击"') | safe }},
+  submitting:   {{ ('"Submitting..."' if lang == 'en' else '"提交中…"') | safe }},
+  submitBtn:    {{ ('"Submit"' if lang == 'en' else '"提交答案"') | safe }},
+  submitFail:   {{ ('"Submission failed, please retry"' if lang == 'en' else '"提交失败，请重试"') | safe }},
+  netError:     {{ ('"Network error, please check your connection and retry."' if lang == 'en' else '"网络错误，请检查连接后重试。"') | safe }},
+};
 
 const p2ans      = { q2:null, q3:null, q4:null, q5:null };
 let page1Answer  = null;
@@ -406,26 +419,26 @@ function advanceToPage2() {
   const dtEl = document.getElementById('decision-time-display');
   const wrap = document.getElementById('decision-time-wrap');
   if (timedOut) {
-    dtEl.textContent = '未能及时决策（超时）';
+    dtEl.textContent = L.timeoutLabel;
     dtEl.style.color = 'var(--accent-red)';
     wrap.style.background   = 'rgba(248,81,73,.07)';
     wrap.style.borderColor  = 'rgba(248,81,73,.4)';
     document.getElementById('q6-card').style.display = 'block';
   } else {
-    dtEl.textContent = page1TimeSec != null ? page1TimeSec.toFixed(1) + ' 秒' : '—';
+    dtEl.textContent = page1TimeSec != null ? page1TimeSec.toFixed(1) + L.secUnit : '—';
   }
   {% endif %}
 
   // Update locked decision display
   const ldEl = document.getElementById('locked-decision-text');
   if (timedOut) {
-    ldEl.textContent = '⚠ 超时未决策';
+    ldEl.textContent = L.timedOut;
     ldEl.style.color = 'var(--accent-red)';
   } else if (page1Answer === 1) {
-    ldEl.textContent = '✓ 批准打击';
+    ldEl.textContent = L.approved;
     ldEl.style.color = 'var(--accent-red)';
   } else {
-    ldEl.textContent = '✗ 不批准打击';
+    ldEl.textContent = L.rejected;
     ldEl.style.color = 'var(--accent-green)';
   }
 
@@ -467,7 +480,7 @@ function doSubmit() {
     return;
   }
   const btn = document.getElementById('submit-btn');
-  btn.disabled = true; btn.textContent = '提交中…';
+  btn.disabled = true; btn.textContent = L.submitting;
 
   const payload = {
     responsibility:    p2ans.q2,
@@ -486,9 +499,9 @@ function doSubmit() {
   .then(r => r.json())
   .then(d => {
     if (d.redirect) { location.href = d.redirect; }
-    else { btn.disabled = false; btn.textContent = '提交答案'; alert(d.error || '提交失败，请重试'); }
+    else { btn.disabled = false; btn.textContent = L.submitBtn; alert(d.error || L.submitFail); }
   })
-  .catch(() => { btn.disabled = false; btn.textContent = '提交答案'; alert('网络错误，请检查连接后重试。'); });
+  .catch(() => { btn.disabled = false; btn.textContent = L.submitBtn; alert(L.netError); });
 }
 </script>
 {% endblock %}

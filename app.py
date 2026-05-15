@@ -28,6 +28,11 @@ with app.app_context():
     init_db()
 
 
+@app.context_processor
+def inject_globals():
+    return dict(lang=get_setting('survey_language', 'zh'))
+
+
 # ──────────────────────────────────────────────
 # Survey routes
 # ──────────────────────────────────────────────
@@ -523,6 +528,18 @@ def admin_collection():
         set_setting('collection_deadline', data.get('deadline', '').strip())
         return jsonify(get_collection_status())
     return render_template('admin_collection.html', collection=get_collection_status())
+
+
+@app.route('/admin/language', methods=['POST'])
+def admin_set_language():
+    if not admin_required():
+        return jsonify({'error': 'Unauthorized'}), 401
+    data = request.get_json(silent=True) or {}
+    lang = data.get('lang', 'zh')
+    if lang not in ('zh', 'en'):
+        return jsonify({'error': 'Invalid language'}), 400
+    set_setting('survey_language', lang)
+    return jsonify({'success': True, 'lang': lang})
 
 
 @app.route('/admin/clear-data', methods=['POST'])

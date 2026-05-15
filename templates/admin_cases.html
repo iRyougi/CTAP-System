@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}情景管理 — 研究后台{% endblock %}
+{% block title %}{% if lang == 'en' %}Case Management — Research Dashboard{% else %}情景管理 — 研究后台{% endif %}{% endblock %}
 
 {% block head %}
 <style>
@@ -47,75 +47,85 @@
   <!-- Header -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.8rem;flex-wrap:wrap;gap:1rem;">
     <div>
-      <div class="badge badge-blue" style="margin-bottom:.4rem;">情景管理</div>
-      <h1 style="font-size:1.5rem;">Case 题目管理</h1>
+      <div class="badge badge-blue" style="margin-bottom:.4rem;">{% if lang == 'en' %}Case Management{% else %}情景管理{% endif %}</div>
+      <h1 style="font-size:1.5rem;">{% if lang == 'en' %}Case Management{% else %}Case 题目管理{% endif %}</h1>
     </div>
     <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
-      <a href="/admin/dashboard" class="btn btn-ghost btn-sm">← 返回后台</a>
-      <button class="btn btn-primary btn-sm" onclick="toggleAdd()">+ 添加情景</button>
-      <button class="btn btn-ghost btn-sm" style="color:var(--accent-red);border-color:rgba(248,81,73,.35);" onclick="resetToDefault()">↺ 恢复默认情景</button>
+      <a href="/admin/dashboard" class="btn btn-ghost btn-sm">← {% if lang == 'en' %}Back to Dashboard{% else %}返回后台{% endif %}</a>
+      <button class="btn btn-primary btn-sm" onclick="toggleAdd()">+ {% if lang == 'en' %}Add Case{% else %}添加情景{% endif %}</button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--accent-red);border-color:rgba(248,81,73,.35);" onclick="resetToDefault()">↺ {% if lang == 'en' %}Reset to Default{% else %}恢复默认情景{% endif %}</button>
     </div>
   </div>
 
   <!-- Stats -->
   <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;">
     <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:10px;padding:.75rem 1.2rem;">
-      <span style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">总情景数</span>
+      <span style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">{% if lang == 'en' %}Total Cases{% else %}总情景数{% endif %}</span>
       <span style="font-size:1.3rem;font-weight:700;color:var(--accent-blue);margin-left:.6rem;">{{ cases|length }}</span>
     </div>
     <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:10px;padding:.75rem 1.2rem;">
-      <span style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">已启用</span>
+      <span style="font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">{% if lang == 'en' %}Active{% else %}已启用{% endif %}</span>
       <span style="font-size:1.3rem;font-weight:700;color:var(--accent-green);margin-left:.6rem;">{{ cases|selectattr('active','equalto',1)|list|length }}</span>
     </div>
   </div>
 
   <!-- CSV Import -->
   <div class="card" style="margin-bottom:1.5rem;">
-    <div class="sec-title">批量导入情景 CSV</div>
+    <div class="sec-title">{% if lang == 'en' %}Bulk Import via CSV{% else %}批量导入情景 CSV{% endif %}</div>
     <p class="muted" style="font-size:.87rem;margin-bottom:.9rem;">
-      表头格式：<code style="background:var(--bg-elevated);padding:.1rem .4rem;border-radius:4px;font-size:.8rem;">title,scenario_text</code>
-      &nbsp;（title 可选，scenario_text 必填；每行一个情景）
+      {% if lang == 'en' %}
+        Header format: <code style="background:var(--bg-elevated);padding:.1rem .4rem;border-radius:4px;font-size:.8rem;">title,scenario_text</code>
+        &nbsp;(title optional, scenario_text required; one scenario per row)
+      {% else %}
+        表头格式：<code style="background:var(--bg-elevated);padding:.1rem .4rem;border-radius:4px;font-size:.8rem;">title,scenario_text</code>
+        &nbsp;（title 可选，scenario_text 必填；每行一个情景）
+      {% endif %}
     </p>
     <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;">
       <input type="file" id="impFile" accept=".csv" style="width:auto;flex:1;min-width:200px;">
-      <button class="btn btn-ghost btn-sm" onclick="doImport()">上传导入</button>
+      <button class="btn btn-ghost btn-sm" onclick="doImport()">{% if lang == 'en' %}Upload & Import{% else %}上传导入{% endif %}</button>
     </div>
     <div id="impResult" style="margin-top:.7rem;font-size:.87rem;display:none;"></div>
     <div style="margin-top:.9rem;padding:.8rem 1rem;background:var(--bg-elevated);border-radius:8px;font-size:.8rem;color:var(--text-muted);line-height:1.8;">
-      <strong style="color:var(--text-primary);">CSV 格式示例：</strong><br>
+      <strong style="color:var(--text-primary);">{% if lang == 'en' %}CSV format example:{% else %}CSV 格式示例：{% endif %}</strong><br>
       <code>title,scenario_text</code><br>
+      {% if lang == 'en' %}
+      <code>Suspicious Vehicle,"You are a battlefield commander. A drone spotted a suspicious vehicle approaching the base…"</code><br>
+      <code>Bridge Bomb,"Recon reports a suspected device under a bridge with only 70% confirmation…"</code>
+      {% else %}
       <code>可疑车辆,"你是一名战场指挥官。一架无人机发现一辆可疑车辆正在接近己方基地…"</code><br>
       <code>桥梁炸弹,"侦察报告显示一座桥梁下方发现可疑装置，确认度仅70%…"</code>
+      {% endif %}
     </div>
   </div>
 
   <!-- Add single case -->
   <div class="card" style="margin-bottom:1.5rem;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
-      <div class="sec-title" style="margin-bottom:0;">手动添加情景</div>
-      <button class="btn btn-ghost btn-sm" id="add-toggle-btn" onclick="toggleAdd()">展开 ▾</button>
+      <div class="sec-title" style="margin-bottom:0;">{% if lang == 'en' %}Add Case Manually{% else %}手动添加情景{% endif %}</div>
+      <button class="btn btn-ghost btn-sm" id="add-toggle-btn" onclick="toggleAdd()">{% if lang == 'en' %}Expand ▾{% else %}展开 ▾{% endif %}</button>
     </div>
     <div id="add-panel">
       <div style="margin-bottom:.75rem;">
-        <label>情景标题（选填）</label>
-        <input type="text" id="new-title" placeholder="例：可疑车辆">
+        <label>{% if lang == 'en' %}Case Title (Optional){% else %}情景标题（选填）{% endif %}</label>
+        <input type="text" id="new-title" placeholder="{% if lang == 'en' %}e.g. Suspicious Vehicle{% else %}例：可疑车辆{% endif %}">
       </div>
       <div style="margin-bottom:.75rem;">
-        <label>情景正文（必填）</label>
-        <textarea id="new-text" style="resize:vertical;min-height:110px;font-size:.9rem;line-height:1.7;" placeholder="你是一名战场指挥官。…"></textarea>
+        <label>{% if lang == 'en' %}Scenario Text (Required){% else %}情景正文（必填）{% endif %}</label>
+        <textarea id="new-text" style="resize:vertical;min-height:110px;font-size:.9rem;line-height:1.7;" placeholder="{% if lang == 'en' %}You are a battlefield commander...{% else %}你是一名战场指挥官。…{% endif %}"></textarea>
       </div>
       <div class="ed-grid" style="margin-bottom:.75rem;">
         <div>
-          <label>AI 高置信度（%，建议打击）</label>
+          <label>{% if lang == 'en' %}AI High Confidence (%, Recommend Strike){% else %}AI 高置信度（%，建议打击）{% endif %}</label>
           <input type="number" id="new-prob-high" value="85" min="0" max="100" step="1">
         </div>
         <div>
-          <label>AI 低置信度（%，不建议打击）</label>
+          <label>{% if lang == 'en' %}AI Low Confidence (%, Recommend No Strike){% else %}AI 低置信度（%，不建议打击）{% endif %}</label>
           <input type="number" id="new-prob-low" value="15" min="0" max="100" step="1">
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:.75rem;">
-        <button class="btn btn-primary btn-sm" onclick="addCase()">保存情景</button>
+        <button class="btn btn-primary btn-sm" onclick="addCase()">{% if lang == 'en' %}Save Case{% else %}保存情景{% endif %}</button>
         <span id="add-msg" style="font-size:.87rem;display:none;"></span>
       </div>
     </div>
@@ -123,7 +133,7 @@
 
   <!-- Case list -->
   <div class="card">
-    <div class="sec-title">情景列表（共 {{ cases|length }} 条）</div>
+    <div class="sec-title">{% if lang == 'en' %}Case List ({{ cases|length }} total){% else %}情景列表（共 {{ cases|length }} 条）{% endif %}</div>
 
     {% if cases %}
     <div id="case-list">
@@ -132,22 +142,22 @@
         <div class="case-header">
           <div style="flex:1;min-width:0;">
             <div style="display:flex;align-items:center;gap:.55rem;flex-wrap:wrap;margin-bottom:.35rem;">
-              <span class="badge {% if c.active %}badge-on{% else %}badge-off{% endif %}" style="font-size:.68rem;">{% if c.active %}启用{% else %}停用{% endif %}</span>
+              <span class="badge {% if c.active %}badge-on{% else %}badge-off{% endif %}" style="font-size:.68rem;">{% if c.active %}{% if lang == 'en' %}Active{% else %}启用{% endif %}{% else %}{% if lang == 'en' %}Inactive{% else %}停用{% endif %}{% endif %}</span>
               <span style="font-size:.73rem;color:var(--text-faint);">ID {{ c.id }}</span>
               <span style="font-size:.73rem;color:var(--text-faint);">{{ c.created_at[:10] if c.created_at else '' }}</span>
             </div>
             <div class="case-title-text">{{ c.title }}</div>
             <div style="font-size:.75rem;color:var(--text-faint);margin-bottom:.2rem;">
-              高置信度 <b style="color:var(--accent-amber);">{{ ((c.prob_high or 0.85)*100)|round|int }}%</b>
+              {% if lang == 'en' %}High{% else %}高置信度{% endif %} <b style="color:var(--accent-amber);">{{ ((c.prob_high or 0.85)*100)|round|int }}%</b>
               &nbsp;·&nbsp;
-              低置信度 <b style="color:var(--text-muted);">{{ ((c.prob_low or 0.15)*100)|round|int }}%</b>
+              {% if lang == 'en' %}Low{% else %}低置信度{% endif %} <b style="color:var(--text-muted);">{{ ((c.prob_low or 0.15)*100)|round|int }}%</b>
             </div>
             <div class="case-preview">{{ c.scenario_text }}</div>
           </div>
           <div class="case-actions">
-            <button class="btn btn-ghost btn-sm" onclick="toggleEditor({{ c.id }})">编辑</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleEditor({{ c.id }})">{% if lang == 'en' %}Edit{% else %}编辑{% endif %}</button>
             <button class="btn btn-ghost btn-sm" style="color:var(--accent-red);"
-              data-del-id="{{ c.id }}" data-del-title="{{ c.title | e }}">删除</button>
+              data-del-id="{{ c.id }}" data-del-title="{{ c.title | e }}">{% if lang == 'en' %}Delete{% else %}删除{% endif %}</button>
           </div>
         </div>
 
@@ -155,33 +165,33 @@
         <div class="case-editor" id="editor-{{ c.id }}">
           <div class="ed-grid">
             <div>
-              <label>标题</label>
+              <label>{% if lang == 'en' %}Title{% else %}标题{% endif %}</label>
               <input type="text" id="ed-title-{{ c.id }}" value="{{ c.title }}">
             </div>
             <div style="display:flex;align-items:flex-end;padding-bottom:.1rem;">
               <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;color:var(--text-primary);margin-bottom:0;font-size:.9rem;">
                 <input type="checkbox" id="ed-active-{{ c.id }}" {% if c.active %}checked{% endif %} style="width:auto;margin:0;">
-                启用（参与者可被随机分配到此情景）
+                {% if lang == 'en' %}Active (participants may be assigned this case){% else %}启用（参与者可被随机分配到此情景）{% endif %}
               </label>
             </div>
           </div>
           <div class="ed-grid" style="margin-bottom:.75rem;">
             <div>
-              <label>AI 高置信度（%，建议打击）</label>
+              <label>{% if lang == 'en' %}AI High Confidence (%, Recommend Strike){% else %}AI 高置信度（%，建议打击）{% endif %}</label>
               <input type="number" id="ed-prob-high-{{ c.id }}" value="{{ ((c.prob_high or 0.85) * 100)|round|int }}" min="0" max="100" step="1">
             </div>
             <div>
-              <label>AI 低置信度（%，不建议打击）</label>
+              <label>{% if lang == 'en' %}AI Low Confidence (%, Recommend No Strike){% else %}AI 低置信度（%，不建议打击）{% endif %}</label>
               <input type="number" id="ed-prob-low-{{ c.id }}" value="{{ ((c.prob_low or 0.15) * 100)|round|int }}" min="0" max="100" step="1">
             </div>
           </div>
           <div style="margin-bottom:.75rem;">
-            <label>情景正文</label>
+            <label>{% if lang == 'en' %}Scenario Text{% else %}情景正文{% endif %}</label>
             <textarea id="ed-text-{{ c.id }}">{{ c.scenario_text }}</textarea>
           </div>
           <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;">
-            <button class="btn btn-primary btn-sm" onclick="saveCase({{ c.id }})">保存修改</button>
-            <button class="btn btn-ghost btn-sm" onclick="toggleEditor({{ c.id }})">取消</button>
+            <button class="btn btn-primary btn-sm" onclick="saveCase({{ c.id }})">{% if lang == 'en' %}Save Changes{% else %}保存修改{% endif %}</button>
+            <button class="btn btn-ghost btn-sm" onclick="toggleEditor({{ c.id }})">{% if lang == 'en' %}Cancel{% else %}取消{% endif %}</button>
             <span id="ed-msg-{{ c.id }}" style="font-size:.87rem;display:none;"></span>
           </div>
         </div>
@@ -190,7 +200,7 @@
     </div>
     {% else %}
     <div style="text-align:center;color:var(--text-muted);padding:2.5rem 1rem;">
-      暂无情景，请通过 CSV 导入或手动添加。
+      {% if lang == 'en' %}No cases yet. Import via CSV or add manually.{% else %}暂无情景，请通过 CSV 导入或手动添加。{% endif %}
     </div>
     {% endif %}
   </div>
@@ -198,9 +208,13 @@
 </div>
 
 <script>
+const isEn = {{ 'true' if lang == 'en' else 'false' }};
+
 function toggleAdd() {
   const open = document.getElementById('add-panel').classList.toggle('open');
-  document.getElementById('add-toggle-btn').textContent = open ? '收起 ▴' : '展开 ▾';
+  document.getElementById('add-toggle-btn').textContent = open
+    ? (isEn ? 'Collapse ▴' : '收起 ▴')
+    : (isEn ? 'Expand ▾'   : '展开 ▾');
 }
 
 function toggleEditor(id) {
@@ -213,27 +227,30 @@ function addCase() {
   const prob_high = parseFloat(document.getElementById('new-prob-high').value) || 85;
   const prob_low  = parseFloat(document.getElementById('new-prob-low').value)  || 15;
   const msg       = document.getElementById('add-msg');
-  if (!text) { show(msg, '情景正文不能为空', 'red'); return; }
+  if (!text) { show(msg, isEn ? 'Scenario text cannot be empty' : '情景正文不能为空', 'red'); return; }
 
   fetch('/admin/cases/add', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ title, scenario_text: text, prob_high, prob_low })
   }).then(r=>r.json()).then(d=>{
     if (d.error) { show(msg, d.error, 'red'); return; }
-    show(msg, '保存成功，正在刷新…', 'green');
+    show(msg, isEn ? 'Saved, reloading...' : '保存成功，正在刷新…', 'green');
     setTimeout(() => location.reload(), 800);
-  }).catch(() => show(msg, '网络错误', 'red'));
+  }).catch(() => show(msg, isEn ? 'Network error' : '网络错误', 'red'));
 }
 
 function resetToDefault() {
-  if (!confirm('确定要删除所有情景并恢复唯一的默认情景吗？此操作不可撤销。')) return;
+  const confirmMsg = isEn
+    ? 'Delete all cases and restore the single default case? This cannot be undone.'
+    : '确定要删除所有情景并恢复唯一的默认情景吗？此操作不可撤销。';
+  if (!confirm(confirmMsg)) return;
   fetch('/admin/cases/reset-default', { method: 'POST' })
     .then(r => r.json())
     .then(d => {
-      if (d.error) { alert('操作失败：' + d.error); return; }
+      if (d.error) { alert((isEn ? 'Error: ' : '操作失败：') + d.error); return; }
       location.reload();
     })
-    .catch(() => alert('网络错误，操作失败'));
+    .catch(() => alert(isEn ? 'Network error, operation failed' : '网络错误，操作失败'));
 }
 
 function saveCase(id) {
@@ -243,56 +260,58 @@ function saveCase(id) {
   const prob_high = parseFloat(document.getElementById('ed-prob-high-' + id).value) || 85;
   const prob_low  = parseFloat(document.getElementById('ed-prob-low-'  + id).value) || 15;
   const msg       = document.getElementById('ed-msg-'       + id);
-  if (!text) { show(msg, '正文不能为空', 'red'); return; }
+  if (!text) { show(msg, isEn ? 'Text cannot be empty' : '正文不能为空', 'red'); return; }
 
   fetch('/admin/cases/' + id, {
     method:'PUT', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({ title, scenario_text: text, active, prob_high, prob_low })
   }).then(r => {
-    if (r.status === 401) { alert('登录已失效，请重新登录后台'); location.href='/admin'; return Promise.reject(); }
+    if (r.status === 401) { alert(isEn ? 'Session expired, please log in again' : '登录已失效，请重新登录后台'); location.href='/admin'; return Promise.reject(); }
     return r.json();
   }).then(d=>{
-    if (!d || d.error) { show(msg, d ? d.error : '保存失败', 'red'); return; }
-    show(msg, '已保存', 'green');
+    if (!d || d.error) { show(msg, d ? d.error : (isEn ? 'Save failed' : '保存失败'), 'red'); return; }
+    show(msg, isEn ? 'Saved' : '已保存', 'green');
     const row = document.getElementById('case-' + id);
-    row.querySelector('.case-title-text').textContent = title || '（无标题）';
+    row.querySelector('.case-title-text').textContent = title || (isEn ? '(Untitled)' : '（无标题）');
     row.querySelector('.case-preview').textContent    = text;
     row.classList.toggle('inactive', !active);
     const badge = row.querySelector('.badge');
     badge.className = 'badge ' + (active ? 'badge-on' : 'badge-off');
-    badge.textContent = active ? '启用' : '停用';
-  }).catch(() => show(msg, '保存失败', 'red'));
+    badge.textContent = active ? (isEn ? 'Active' : '启用') : (isEn ? 'Inactive' : '停用');
+  }).catch(() => show(msg, isEn ? 'Save failed' : '保存失败', 'red'));
 }
 
-// Delete via event delegation to avoid onclick + tojson quoting issues
 document.addEventListener('click', function(e) {
   const btn = e.target.closest('[data-del-id]');
   if (!btn) return;
   const id    = btn.dataset.delId;
   const title = btn.dataset.delTitle;
-  if (!confirm('确定删除情景「' + title + '」？此操作不可撤销。')) return;
+  const confirmMsg = isEn
+    ? 'Delete case "' + title + '"? This cannot be undone.'
+    : '确定删除情景「' + title + '」？此操作不可撤销。';
+  if (!confirm(confirmMsg)) return;
   fetch('/admin/cases/' + id, { method: 'DELETE' })
     .then(r => r.json())
     .then(d => {
-      if (d.error) { alert('删除失败：' + d.error); return; }
+      if (d.error) { alert((isEn ? 'Delete failed: ' : '删除失败：') + d.error); return; }
       const el = document.getElementById('case-' + id);
       if (el) { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }
     })
-    .catch(() => alert('网络错误，删除失败'));
+    .catch(() => alert(isEn ? 'Network error, delete failed' : '网络错误，删除失败'));
 });
 
 function doImport() {
   const file = document.getElementById('impFile').files[0];
   const res  = document.getElementById('impResult');
-  if (!file) { showEl(res, '请先选择文件', 'red'); return; }
+  if (!file) { showEl(res, isEn ? 'Please select a file first' : '请先选择文件', 'red'); return; }
   const fd = new FormData(); fd.append('file', file);
   fetch('/admin/cases/import', { method:'POST', body:fd })
     .then(r=>r.json()).then(d=>{
       if (d.error) { showEl(res, d.error, 'red'); return; }
-      const warn = d.errors.length ? '  警告：' + d.errors.slice(0,3).join('；') : '';
-      showEl(res, '成功导入 ' + d.imported + ' 条情景。' + warn, 'green');
+      const warn = d.errors.length ? '  ' + (isEn ? 'Warnings: ' : '警告：') + d.errors.slice(0,3).join('；') : '';
+      showEl(res, (isEn ? 'Imported ' + d.imported + ' case(s).' : '成功导入 ' + d.imported + ' 条情景。') + warn, 'green');
       if (d.imported > 0) setTimeout(() => location.reload(), 1200);
-    }).catch(() => showEl(res, '上传失败', 'red'));
+    }).catch(() => showEl(res, isEn ? 'Upload failed' : '上传失败', 'red'));
 }
 
 function show(el, text, color) {

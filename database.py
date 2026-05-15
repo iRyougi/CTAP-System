@@ -121,6 +121,7 @@ def init_db():
         ('collection_open',     '1'),
         ('collection_quota',    ''),
         ('collection_deadline', ''),
+        ('survey_language',     'zh'),
     ]:
         conn.execute('INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)', (k, v))
 

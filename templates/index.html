@@ -1,59 +1,75 @@
 {% extends "base.html" %}
-{% block title %}战场指挥决策研究 — 参与者入口{% endblock %}
+{% block title %}{% if lang == 'en' %}Battlefield Command Decision Study — Participant Portal{% else %}战场指挥决策研究 — 参与者入口{% endif %}{% endblock %}
 
 {% block body %}
 <div class="page-wrap">
 
   <div style="text-align:center; padding: 2rem 0 1.5rem;">
-    <div class="badge badge-purple" style="margin-bottom:1rem;">学术研究项目</div>
-    <h1 style="margin-bottom:.6rem;">战场指挥决策研究</h1>
+    <div class="badge badge-purple" style="margin-bottom:1rem;">{% if lang == 'en' %}Academic Research{% else %}学术研究项目{% endif %}</div>
+    <h1 style="margin-bottom:.6rem;">{% if lang == 'en' %}Battlefield Command Decision Study{% else %}战场指挥决策研究{% endif %}</h1>
     <p class="muted">Human-AI Interaction in Military Command Decision-Making</p>
   </div>
 
   <div class="card">
-    <h2 style="margin-bottom:1.2rem;">研究说明</h2>
+    <h2 style="margin-bottom:1.2rem;">{% if lang == 'en' %}Study Information{% else %}研究说明{% endif %}</h2>
     <p style="margin-bottom:1rem; line-height:1.85;">
-      本研究旨在探究不同信息条件下，指挥人员在战术决策过程中的判断模式。
-      您将阅读一段战场情景描述，并根据所给信息回答若干问题。
+      {% if lang == 'en' %}
+        This study investigates how commanders make tactical judgments under different information conditions.
+        You will read a battlefield scenario description and answer several questions based on the information provided.
+      {% else %}
+        本研究旨在探究不同信息条件下，指挥人员在战术决策过程中的判断模式。
+        您将阅读一段战场情景描述，并根据所给信息回答若干问题。
+      {% endif %}
     </p>
     <p style="margin-bottom:1rem; line-height:1.85;">
-      本问卷所有情景均为<strong style="color:var(--accent-amber)">虚构的模拟场景</strong>，不涉及真实作战行动。
-      您的回答将匿名处理，仅用于学术研究目的。
+      {% if lang == 'en' %}
+        All scenarios in this survey are <strong style="color:var(--accent-amber)">fictional simulations</strong> and do not involve real combat operations.
+        Your responses will be anonymised and used solely for academic research purposes.
+      {% else %}
+        本问卷所有情景均为<strong style="color:var(--accent-amber)">虚构的模拟场景</strong>，不涉及真实作战行动。
+        您的回答将匿名处理，仅用于学术研究目的。
+      {% endif %}
     </p>
 
     <hr>
 
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:1rem; margin-bottom:1.5rem;">
       <div style="background:var(--bg-elevated); border:1px solid var(--border); border-radius:10px; padding:1rem;">
-        <div style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.4rem;">预计用时</div>
-        <div style="font-size:1.25rem; font-weight:700; color:var(--accent-blue);">约 3 分钟</div>
+        <div style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.4rem;">{% if lang == 'en' %}Est. Time{% else %}预计用时{% endif %}</div>
+        <div style="font-size:1.25rem; font-weight:700; color:var(--accent-blue);">{% if lang == 'en' %}~3 Minutes{% else %}约 3 分钟{% endif %}</div>
       </div>
       <div style="background:var(--bg-elevated); border:1px solid var(--border); border-radius:10px; padding:1rem;">
-        <div style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.4rem;">问题数量</div>
-        <div style="font-size:1.25rem; font-weight:700; color:var(--accent-green);">4 — 5 题</div>
+        <div style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.4rem;">{% if lang == 'en' %}Questions{% else %}问题数量{% endif %}</div>
+        <div style="font-size:1.25rem; font-weight:700; color:var(--accent-green);">4 — 5</div>
       </div>
       <div style="background:var(--bg-elevated); border:1px solid var(--border); border-radius:10px; padding:1rem;">
-        <div style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.4rem;">数据保护</div>
-        <div style="font-size:1.25rem; font-weight:700; color:var(--accent-amber);">完全匿名</div>
+        <div style="font-size:.72rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.4rem;">{% if lang == 'en' %}Privacy{% else %}数据保护{% endif %}</div>
+        <div style="font-size:1.25rem; font-weight:700; color:var(--accent-amber);">{% if lang == 'en' %}Anonymous{% else %}完全匿名{% endif %}</div>
       </div>
     </div>
 
     <div style="background:rgba(88,166,255,.07); border:1px solid rgba(88,166,255,.2); border-radius:10px; padding:1rem 1.2rem; margin-bottom:1.5rem;">
       <p style="font-size:.88rem; color:var(--accent-blue); margin:0; line-height:1.7;">
-        ℹ&nbsp; 点击"开始参与"即表示您自愿参与本研究，并了解您可随时退出。
-        本研究已通过学术伦理审核，数据仅用于学术分析，不会对外公开个人信息。
+        {% if lang == 'en' %}
+          ℹ&nbsp; By clicking "Start", you voluntarily agree to participate and understand you may withdraw at any time.
+          This study has been approved by an academic ethics board. Data is used for academic analysis only and will not be publicly disclosed.
+        {% else %}
+          ℹ&nbsp; 点击"开始参与"即表示您自愿参与本研究，并了解您可随时退出。
+          本研究已通过学术伦理审核，数据仅用于学术分析，不会对外公开个人信息。
+        {% endif %}
       </p>
     </div>
 
     <form method="POST" action="/start">
       <button type="submit" class="btn btn-primary w-full" style="font-size:1.05rem; padding:.9rem;">
-        ▶&nbsp; 开始参与
+        ▶&nbsp; {% if lang == 'en' %}Start Participation{% else %}开始参与{% endif %}
       </button>
     </form>
   </div>
 
   <p class="muted text-center" style="margin-top:1.5rem; font-size:.82rem;">
-    如有问题请联系研究团队 &nbsp;|&nbsp; <a href="mailto:iryougi@iryougi.com" style="color:inherit;text-decoration:underline;text-underline-offset:3px;">CTAP Project &nbsp;·&nbsp; Group 12</a>
+    {% if lang == 'en' %}Questions? Contact the research team{% else %}如有问题请联系研究团队{% endif %}
+    &nbsp;|&nbsp; <a href="mailto:iryougi@iryougi.com" style="color:inherit;text-decoration:underline;text-underline-offset:3px;">CTAP Project &nbsp;·&nbsp; Group 12</a>
   </p>
 
 </div>

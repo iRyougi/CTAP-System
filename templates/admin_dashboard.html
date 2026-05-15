@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}管理后台 — 战场决策研究{% endblock %}
+{% block title %}{% if lang == 'en' %}Research Dashboard{% else %}管理后台 — 战场决策研究{% endif %}{% endblock %}
 
 {% block head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -42,19 +42,35 @@
     .card { padding: 1.1rem; }
   }
 
-  /* Clear-data modal */
-  #clear-overlay {
+  /* Shared modal overlay */
+  .modal-overlay {
     display:none; position:fixed; inset:0;
     background:rgba(0,0,0,.7); backdrop-filter:blur(3px);
     z-index:100; align-items:center; justify-content:center;
   }
-  #clear-overlay.open { display:flex; }
+  .modal-overlay.open { display:flex; }
+
+  /* Clear-data modal */
   #clear-modal {
     background:var(--bg-surface); border:1px solid rgba(248,81,73,.4);
     border-radius:14px; padding:2rem; width:100%; max-width:400px;
     box-shadow:0 8px 40px rgba(0,0,0,.7); margin:1rem;
   }
   #clear-pw-input:focus { border-color:var(--accent-red); box-shadow:0 0 0 3px rgba(248,81,73,.15); }
+
+  /* Language modal */
+  #lang-modal {
+    background:var(--bg-surface); border:1px solid rgba(88,166,255,.35);
+    border-radius:14px; padding:2rem; width:100%; max-width:380px;
+    box-shadow:0 8px 40px rgba(0,0,0,.7); margin:1rem;
+  }
+  #lang-code-display {
+    font-size:2.6rem; font-weight:700; letter-spacing:.4em;
+    color:var(--accent-blue); text-align:center;
+    background:var(--bg-elevated); border-radius:10px;
+    padding:.75rem 1rem; margin:.9rem 0; font-variant-numeric:tabular-nums;
+  }
+  #lang-code-input { text-align:center; font-size:1.4rem; letter-spacing:.3em; font-weight:700; }
 </style>
 {% endblock %}
 
@@ -64,32 +80,32 @@
   <!-- Top bar -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.8rem;flex-wrap:wrap;gap:1rem;">
     <div>
-      <div class="badge badge-purple" style="margin-bottom:.4rem;">管理后台</div>
-      <h1 style="font-size:1.55rem;">研究数据总览</h1>
+      <div class="badge badge-purple" style="margin-bottom:.4rem;">{% if lang == 'en' %}Admin Dashboard{% else %}管理后台{% endif %}</div>
+      <h1 style="font-size:1.55rem;">{% if lang == 'en' %}Research Data Overview{% else %}研究数据总览{% endif %}</h1>
     </div>
     <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
       <a href="/admin/collection" class="btn btn-ghost btn-sm" style="{% if not collection.is_open %}color:var(--accent-red);border-color:rgba(248,81,73,.35);{% endif %}">
-        {% if collection.is_open %}● {% else %}■ {% endif %}收集控制
+        {% if collection.is_open %}● {% else %}■ {% endif %}{% if lang == 'en' %}Collection Control{% else %}收集控制{% endif %}
       </a>
-      <a href="/admin/cases" class="btn btn-ghost btn-sm">⚙ 管理情景题目</a>
-      <button class="btn btn-ghost btn-sm" style="color:var(--accent-red);border-color:rgba(248,81,73,.35);" onclick="openClearModal()">🗑 清空数据库</button>
-      <a href="/admin/logout" class="btn btn-ghost btn-sm">退出登录</a>
+      <a href="/admin/cases" class="btn btn-ghost btn-sm">⚙ {% if lang == 'en' %}Manage Cases{% else %}管理情景题目{% endif %}</a>
+      <button class="btn btn-ghost btn-sm" onclick="openLangModal()">🌐 {% if lang == 'en' %}中文{% else %}English{% endif %}</button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--accent-red);border-color:rgba(248,81,73,.35);" onclick="openClearModal()">🗑 {% if lang == 'en' %}Clear Database{% else %}清空数据库{% endif %}</button>
+      <a href="/admin/logout" class="btn btn-ghost btn-sm">{% if lang == 'en' %}Logout{% else %}退出登录{% endif %}</a>
     </div>
   </div>
 
   <!-- KPI cards -->
-
   <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;">
     <div class="stat-card">
-      <div class="stat-label">总回复数</div>
+      <div class="stat-label">{% if lang == 'en' %}Total Responses{% else %}总回复数{% endif %}</div>
       <div class="stat-val" style="color:var(--accent-blue);">{{ stats.total }}</div>
     </div>
-    {% set descs = {'A':'无AI · 低压力','B':'有AI · 低压力','C':'无AI · 高压力','D':'有AI · 高压力'} %}
+    {% set descs = {'A': ('No AI · Low Pressure' if lang == 'en' else '无AI · 低压力'), 'B': ('AI · Low Pressure' if lang == 'en' else '有AI · 低压力'), 'C': ('No AI · High Pressure' if lang == 'en' else '无AI · 高压力'), 'D': ('AI · High Pressure' if lang == 'en' else '有AI · 高压力')} %}
     {% for g in ['A','B','C','D'] %}{% set d = stats.by_group[g] %}
     <div class="stat-card">
-      <div class="stat-label">{{ g }} 组 &nbsp;{{ descs[g] }}</div>
-      <div class="stat-val" style="font-size:1.5rem;">{{ d.count }}<span style="font-size:.9rem;color:var(--text-muted);font-weight:400;"> 份</span></div>
-      {% if d.count > 0 %}<div style="font-size:.8rem;color:var(--text-muted);margin-top:.25rem;">批准率 <b style="color:var(--text-primary);">{{ '%.0f'|format(d.approve_rate*100) }}%</b></div>{% endif %}
+      <div class="stat-label">{% if lang == 'en' %}Group {% endif %}{{ g }} &nbsp;{{ descs[g] }}</div>
+      <div class="stat-val" style="font-size:1.5rem;">{{ d.count }}<span style="font-size:.9rem;color:var(--text-muted);font-weight:400;"> {% if lang == 'en' %}resp.{% else %}份{% endif %}</span></div>
+      {% if d.count > 0 %}<div style="font-size:.8rem;color:var(--text-muted);margin-top:.25rem;">{% if lang == 'en' %}Approval{% else %}批准率{% endif %} <b style="color:var(--text-primary);">{{ '%.0f'|format(d.approve_rate*100) }}%</b></div>{% endif %}
     </div>
     {% endfor %}
   </div>
@@ -97,11 +113,11 @@
   <!-- Charts -->
   <div class="grid-2" style="margin-bottom:1.5rem;">
     <div class="card">
-      <div class="sec-title">各组批准打击率（%）</div>
+      <div class="sec-title">{% if lang == 'en' %}Approval Rate by Group (%){% else %}各组批准打击率（%）{% endif %}</div>
       <div class="chart-box"><canvas id="cApprove"></canvas></div>
     </div>
     <div class="card">
-      <div class="sec-title">各组平均责任感 &amp; 信心评分（1–7）</div>
+      <div class="sec-title">{% if lang == 'en' %}Avg. Responsibility &amp; Confidence by Group (1–7){% else %}各组平均责任感 &amp; 信心评分（1–7）{% endif %}</div>
       <div class="chart-box"><canvas id="cScores"></canvas></div>
     </div>
   </div>
@@ -109,26 +125,24 @@
   <!-- Tools row -->
   <div class="grid-2" style="margin-bottom:1.5rem;">
 
-    <!-- Export -->
     <div class="card">
-      <div class="sec-title">导出数据</div>
-      <p class="muted" style="font-size:.87rem;margin-bottom:1.1rem;">导出全部问卷回复，数值型编码（1/0）适合直接统计分析。</p>
+      <div class="sec-title">{% if lang == 'en' %}Export Data{% else %}导出数据{% endif %}</div>
+      <p class="muted" style="font-size:.87rem;margin-bottom:1.1rem;">{% if lang == 'en' %}Export all survey responses. Numeric encoding (1/0) is ready for direct statistical analysis.{% else %}导出全部问卷回复，数值型编码（1/0）适合直接统计分析。{% endif %}</p>
       <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
-        <a href="/admin/export/excel" class="btn btn-success btn-sm">↓ 下载 Excel（含统计表）</a>
-        <a href="/admin/export/csv"   class="btn btn-ghost  btn-sm">↓ 下载 CSV</a>
+        <a href="/admin/export/excel" class="btn btn-success btn-sm">↓ {% if lang == 'en' %}Download Excel (with summary){% else %}下载 Excel（含统计表）{% endif %}</a>
+        <a href="/admin/export/csv"   class="btn btn-ghost  btn-sm">↓ {% if lang == 'en' %}Download CSV{% else %}下载 CSV{% endif %}</a>
       </div>
     </div>
 
-    <!-- Generate codes -->
     <div class="card">
-      <div class="sec-title">生成参与者代码</div>
-      <p class="muted" style="font-size:.87rem;margin-bottom:1.1rem;">按 4 的倍数均衡分配实验组，生成后以 CSV 下载，分发问卷链接给参与者。</p>
+      <div class="sec-title">{% if lang == 'en' %}Generate Participant Codes{% else %}生成参与者代码{% endif %}</div>
+      <p class="muted" style="font-size:.87rem;margin-bottom:1.1rem;">{% if lang == 'en' %}Groups are balanced in multiples of 4. Download as CSV and share links with participants.{% else %}按 4 的倍数均衡分配实验组，生成后以 CSV 下载，分发问卷链接给参与者。{% endif %}</p>
       <form method="POST" action="/admin/generate-codes" style="display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap;">
         <div style="flex:1;min-width:90px;">
-          <label>生成数量</label>
+          <label>{% if lang == 'en' %}Count{% else %}生成数量{% endif %}</label>
           <input type="number" name="count" value="20" min="4" max="1000" step="4">
         </div>
-        <button type="submit" class="btn btn-primary btn-sm">生成并下载</button>
+        <button type="submit" class="btn btn-primary btn-sm">{% if lang == 'en' %}Generate & Download{% else %}生成并下载{% endif %}</button>
       </form>
     </div>
 
@@ -136,28 +150,33 @@
 
   <!-- Settings -->
   <div class="card" style="margin-bottom:1.5rem;">
-    <div class="sec-title">实验设置</div>
-    <p class="muted" style="font-size:.87rem;margin-bottom:1.1rem;">设置每位测试者需要回答的 Case 数量（默认 1）。修改后对新开始的参与者生效。</p>
+    <div class="sec-title">{% if lang == 'en' %}Experiment Settings{% else %}实验设置{% endif %}</div>
+    <p class="muted" style="font-size:.87rem;margin-bottom:1.1rem;">{% if lang == 'en' %}Number of cases each participant answers (default 1). Changes apply to new participants only.{% else %}设置每位测试者需要回答的 Case 数量（默认 1）。修改后对新开始的参与者生效。{% endif %}</p>
     <div style="display:flex;gap:.75rem;align-items:flex-end;flex-wrap:wrap;">
       <div style="flex:1;min-width:120px;max-width:200px;">
-        <label>每位测试者的 Case 数量</label>
+        <label>{% if lang == 'en' %}Cases per Participant{% else %}每位测试者的 Case 数量{% endif %}</label>
         <input type="number" id="cpp-input" value="{{ cases_per_participant }}" min="1" max="20" step="1">
       </div>
-      <button class="btn btn-primary btn-sm" onclick="saveCpp()">保存设置</button>
+      <button class="btn btn-primary btn-sm" onclick="saveCpp()">{% if lang == 'en' %}Save Settings{% else %}保存设置{% endif %}</button>
       <span id="cpp-msg" style="font-size:.85rem;display:none;"></span>
     </div>
   </div>
 
   <!-- Import -->
   <div class="card" style="margin-bottom:1.5rem;">
-    <div class="sec-title">导入参与者 CSV</div>
+    <div class="sec-title">{% if lang == 'en' %}Import Participants via CSV{% else %}导入参与者 CSV{% endif %}</div>
     <p class="muted" style="font-size:.87rem;margin-bottom:.9rem;">
-      CSV 表头格式：<code style="background:var(--bg-elevated);padding:.1rem .4rem;border-radius:4px;font-size:.8rem;">code,group</code>，
-      每行一位参与者，组别为 A / B / C / D。
+      {% if lang == 'en' %}
+        CSV header: <code style="background:var(--bg-elevated);padding:.1rem .4rem;border-radius:4px;font-size:.8rem;">code,group</code>,
+        one participant per row, group must be A / B / C / D.
+      {% else %}
+        CSV 表头格式：<code style="background:var(--bg-elevated);padding:.1rem .4rem;border-radius:4px;font-size:.8rem;">code,group</code>，
+        每行一位参与者，组别为 A / B / C / D。
+      {% endif %}
     </p>
     <div style="display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;">
       <input type="file" id="impFile" accept=".csv" style="width:auto;flex:1;min-width:200px;">
-      <button class="btn btn-ghost btn-sm" onclick="doImport()">上传导入</button>
+      <button class="btn btn-ghost btn-sm" onclick="doImport()">{% if lang == 'en' %}Upload & Import{% else %}上传导入{% endif %}</button>
     </div>
     <div id="impResult" style="margin-top:.75rem;font-size:.87rem;display:none;"></div>
   </div>
@@ -165,44 +184,54 @@
   <!-- Response table -->
   <div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.75rem;">
-      <div class="sec-title" style="margin-bottom:0;">回复明细</div>
+      <div class="sec-title" style="margin-bottom:0;">{% if lang == 'en' %}Response Details{% else %}回复明细{% endif %}</div>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap;" id="filter-btns">
-        <button class="tab-btn active" onclick="setFilter('all',this)">全部</button>
-        <button class="tab-btn" onclick="setFilter('A',this)">A 组</button>
-        <button class="tab-btn" onclick="setFilter('B',this)">B 组</button>
-        <button class="tab-btn" onclick="setFilter('C',this)">C 组</button>
-        <button class="tab-btn" onclick="setFilter('D',this)">D 组</button>
+        <button class="tab-btn active" onclick="setFilter('all',this)">{% if lang == 'en' %}All{% else %}全部{% endif %}</button>
+        <button class="tab-btn" onclick="setFilter('A',this)">{% if lang == 'en' %}Group A{% else %}A 组{% endif %}</button>
+        <button class="tab-btn" onclick="setFilter('B',this)">{% if lang == 'en' %}Group B{% else %}B 组{% endif %}</button>
+        <button class="tab-btn" onclick="setFilter('C',this)">{% if lang == 'en' %}Group C{% else %}C 组{% endif %}</button>
+        <button class="tab-btn" onclick="setFilter('D',this)">{% if lang == 'en' %}Group D{% else %}D 组{% endif %}</button>
       </div>
     </div>
-    <div id="tblLoading" style="text-align:center;color:var(--text-muted);padding:2rem;">加载中…</div>
+    <div id="tblLoading" style="text-align:center;color:var(--text-muted);padding:2rem;">{% if lang == 'en' %}Loading...{% else %}加载中…{% endif %}</div>
     <div class="tbl-wrap" id="tblWrap" style="display:none;">
       <table>
         <thead><tr>
-          <th>ID</th><th>实验组</th><th>批准打击</th>
-          <th>责任感(1-7)</th><th>信心(1-7)</th><th>AI影响(1-7)</th>
-          <th>AI概率</th><th>等待情报</th><th>用时(秒)</th><th>提交时间</th>
+          <th>ID</th>
+          <th>{% if lang == 'en' %}Group{% else %}实验组{% endif %}</th>
+          <th>{% if lang == 'en' %}Approve Strike{% else %}批准打击{% endif %}</th>
+          <th>{% if lang == 'en' %}Responsibility(1-7){% else %}责任感(1-7){% endif %}</th>
+          <th>{% if lang == 'en' %}Confidence(1-7){% else %}信心(1-7){% endif %}</th>
+          <th>{% if lang == 'en' %}AI Influence(1-7){% else %}AI影响(1-7){% endif %}</th>
+          <th>{% if lang == 'en' %}AI Prob.{% else %}AI概率{% endif %}</th>
+          <th>{% if lang == 'en' %}Wait Intel{% else %}等待情报{% endif %}</th>
+          <th>{% if lang == 'en' %}Time(sec){% else %}用时(秒){% endif %}</th>
+          <th>{% if lang == 'en' %}Submitted{% else %}提交时间{% endif %}</th>
         </tr></thead>
         <tbody id="tblBody"></tbody>
       </table>
     </div>
     <div id="tblPagination"></div>
-    <p id="tblEmpty" style="text-align:center;color:var(--text-muted);padding:2rem;display:none;">暂无符合条件的数据</p>
+    <p id="tblEmpty" style="text-align:center;color:var(--text-muted);padding:2rem;display:none;">{% if lang == 'en' %}No data matching current filter{% else %}暂无符合条件的数据{% endif %}</p>
   </div>
 
   <!-- AI Probability Chart -->
   <div class="card" style="margin-top:1.5rem;">
-    <div class="sec-title">AI 概率条件 × 批准率（B / D 组）</div>
-    <p class="muted" style="font-size:.85rem;margin-bottom:1rem;">仅统计有 AI 辅助的 B、D 组，对比高置信度与低置信度条件下的打击批准率。</p>
+    <div class="sec-title">{% if lang == 'en' %}AI Probability Condition × Approval Rate (Groups B/D){% else %}AI 概率条件 × 批准率（B / D 组）{% endif %}</div>
+    <p class="muted" style="font-size:.85rem;margin-bottom:1rem;">{% if lang == 'en' %}Groups B and D only. Compares approval rate under high- vs. low-confidence AI conditions.{% else %}仅统计有 AI 辅助的 B、D 组，对比高置信度与低置信度条件下的打击批准率。{% endif %}</p>
     <div class="chart-box"><canvas id="cAiProb"></canvas></div>
-    <div id="aiProbEmpty" style="display:none;text-align:center;color:var(--text-muted);padding:1.5rem;">暂无 AI 概率条件数据</div>
+    <div id="aiProbEmpty" style="display:none;text-align:center;color:var(--text-muted);padding:1.5rem;">{% if lang == 'en' %}No AI probability condition data yet{% else %}暂无 AI 概率条件数据{% endif %}</div>
   </div>
 
 </div>
 
 <script>
-const stats = {{ stats | tojson }};
-const groups = ['A','B','C','D'];
-const glabels = ['A组\n无AI·低压','B组\n有AI·低压','C组\n无AI·高压','D组\n有AI·高压'];
+const stats  = {{ stats | tojson }};
+const isEn   = {{ 'true' if lang == 'en' else 'false' }};
+const groups  = ['A','B','C','D'];
+const glabels = isEn
+  ? ['Group A\nNo AI·Low','Group B\nAI·Low','Group C\nNo AI·High','Group D\nAI·High']
+  : ['A组\n无AI·低压','B组\n有AI·低压','C组\n无AI·高压','D组\n有AI·高压'];
 const gcolors = { A:'rgba(88,166,255,.8)', B:'rgba(251,191,36,.8)', C:'rgba(248,81,73,.8)', D:'rgba(165,180,252,.8)' };
 const chartDefaults = { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ labels:{ color:'#8b949e', font:{size:12} } } } };
 
@@ -210,7 +239,7 @@ new Chart(document.getElementById('cApprove'), {
   type:'bar',
   data:{
     labels: glabels,
-    datasets:[{ label:'批准率(%)', data: groups.map(g => +(stats.by_group[g].approve_rate*100).toFixed(1)),
+    datasets:[{ label: isEn?'Approval Rate(%)':'批准率(%)', data: groups.map(g => +(stats.by_group[g].approve_rate*100).toFixed(1)),
       backgroundColor: groups.map(g=>gcolors[g]), borderRadius:6 }]
   },
   options:{...chartDefaults, plugins:{legend:{display:false}},
@@ -223,8 +252,8 @@ new Chart(document.getElementById('cScores'), {
   data:{
     labels: glabels,
     datasets:[
-      { label:'平均责任感', data: groups.map(g=>stats.by_group[g].avg_responsibility), backgroundColor:'rgba(88,166,255,.7)', borderRadius:4 },
-      { label:'平均信心',   data: groups.map(g=>stats.by_group[g].avg_confidence),    backgroundColor:'rgba(63,185,80,.7)',  borderRadius:4 }
+      { label: isEn?'Avg. Responsibility':'平均责任感', data: groups.map(g=>stats.by_group[g].avg_responsibility), backgroundColor:'rgba(88,166,255,.7)', borderRadius:4 },
+      { label: isEn?'Avg. Confidence'   :'平均信心',   data: groups.map(g=>stats.by_group[g].avg_confidence),    backgroundColor:'rgba(63,185,80,.7)',  borderRadius:4 }
     ]
   },
   options:{...chartDefaults,
@@ -235,50 +264,46 @@ new Chart(document.getElementById('cScores'), {
 // ── Response table with pagination ──
 const PAGE_SIZE = 20;
 let allRows = [], filteredRows = [], curFilter = 'all', currentPage = 1;
-let aiProbChart = null;
 
 fetch('/admin/api/responses').then(r=>r.json()).then(data=>{
   allRows = data;
   document.getElementById('tblLoading').style.display = 'none';
   renderTable(data);
   renderAiProbChart(data);
-}).catch(()=>{ document.getElementById('tblLoading').textContent='加载失败，请刷新页面重试。'; });
+}).catch(()=>{ document.getElementById('tblLoading').textContent = isEn?'Load failed, please refresh.':'加载失败，请刷新页面重试。'; });
 
-function renderTable(rows) {
-  filteredRows = rows;
-  currentPage = 1;
-  renderPage();
-}
+function renderTable(rows) { filteredRows = rows; currentPage = 1; renderPage(); }
 
 function renderPage() {
   const tbody = document.getElementById('tblBody');
   const wrap  = document.getElementById('tblWrap');
   const empty = document.getElementById('tblEmpty');
   const pagi  = document.getElementById('tblPagination');
-  if (!filteredRows.length) {
-    wrap.style.display='none'; empty.style.display='block'; pagi.style.display='none'; return;
-  }
+  if (!filteredRows.length) { wrap.style.display='none'; empty.style.display='block'; pagi.style.display='none'; return; }
   empty.style.display='none'; wrap.style.display='block';
   const totalPages = Math.ceil(filteredRows.length / PAGE_SIZE);
   const start = (currentPage - 1) * PAGE_SIZE;
   const pageRows = filteredRows.slice(start, start + PAGE_SIZE);
 
   const probBadge = (v) => v===1
-    ? '<span style="background:rgba(248,81,73,.12);color:var(--accent-red);padding:.1rem .4rem;border-radius:4px;font-size:.72rem;font-weight:700;">高</span>'
+    ? `<span style="background:rgba(248,81,73,.12);color:var(--accent-red);padding:.1rem .4rem;border-radius:4px;font-size:.72rem;font-weight:700;">${isEn?'High':'高'}</span>`
     : v===0
-    ? '<span style="background:rgba(63,185,80,.12);color:var(--accent-green);padding:.1rem .4rem;border-radius:4px;font-size:.72rem;font-weight:700;">低</span>'
+    ? `<span style="background:rgba(63,185,80,.12);color:var(--accent-green);padding:.1rem .4rem;border-radius:4px;font-size:.72rem;font-weight:700;">${isEn?'Low':'低'}</span>`
     : '<span style="color:var(--text-faint)">—</span>';
+
+  const approveText  = (v) => v===1?(isEn?'Yes':'是'):v===0?(isEn?'No':'否'):(isEn?'Timed Out':'超时未答');
+  const approveColor = (v) => v===1?'var(--accent-red)':v===0?'var(--accent-green)':'var(--text-muted)';
 
   tbody.innerHTML = pageRows.map(r=>`
     <tr data-id="${r.id}">
       <td style="color:var(--text-muted)">${r.id}</td>
       <td><span class="gtag gtag-${r.group_name}">${r.group_name}</span></td>
-      <td style="color:${r.approve_strike===1?'var(--accent-red)':r.approve_strike===0?'var(--accent-green)':'var(--text-muted)'};font-weight:600;">${r.approve_strike===1?'是':r.approve_strike===0?'否':'超时未答'}</td>
+      <td style="color:${approveColor(r.approve_strike)};font-weight:600;">${approveText(r.approve_strike)}</td>
       <td>${r.responsibility}</td>
       <td>${r.confidence}</td>
       <td>${r.ai_influence!=null?r.ai_influence:'<span style="color:var(--text-faint)">—</span>'}</td>
       <td>${probBadge(r.ai_prob_condition)}</td>
-      <td>${r.wait_for_intel?'是':'否'}</td>
+      <td>${r.wait_for_intel?(isEn?'Yes':'是'):(isEn?'No':'否')}</td>
       <td>${r.page1_time_seconds!=null?r.page1_time_seconds.toFixed(1):'—'}</td>
       <td style="color:var(--text-muted);font-size:.8rem;">${(r.submitted_at||'').slice(0,19).replace('T',' ')}</td>
     </tr>`).join('');
@@ -300,19 +325,21 @@ function renderPagination(totalPages) {
     prev=p;
   }
   html+=`<button onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''} class="page-btn">▶</button>`;
-  html+=`<span style="color:var(--text-muted);font-size:.8rem;margin:0 .3rem;">第${c}/${totalPages}页，共${filteredRows.length}条</span>`;
-  html+=`<input type="number" id="jp-input" min="1" max="${totalPages}" placeholder="页码">`;
-  html+=`<button onclick="jumpToPage()" class="page-btn">跳转</button>`;
+  const pageInfo = isEn
+    ? `Page ${c}/${totalPages}, ${filteredRows.length} entries`
+    : `第${c}/${totalPages}页，共${filteredRows.length}条`;
+  html+=`<span style="color:var(--text-muted);font-size:.8rem;margin:0 .3rem;">${pageInfo}</span>`;
+  html+=`<input type="number" id="jp-input" min="1" max="${totalPages}" placeholder="${isEn?'Page':'页码'}">`;
+  html+=`<button onclick="jumpToPage()" class="page-btn">${isEn?'Go':'跳转'}</button>`;
   html+=`<input type="number" id="ji-input" min="1" placeholder="ID">`;
-  html+=`<button onclick="jumpToId()" class="page-btn">定位ID</button>`;
+  html+=`<button onclick="jumpToId()" class="page-btn">${isEn?'Find ID':'定位ID'}</button>`;
   pagi.innerHTML = html;
 }
 
 function goPage(p) {
   const total = Math.ceil(filteredRows.length / PAGE_SIZE);
   if(p<1||p>total) return;
-  currentPage = p;
-  renderPage();
+  currentPage = p; renderPage();
   const top = document.getElementById('tblWrap').getBoundingClientRect().top + window.scrollY - 80;
   window.scrollTo({top, behavior:'smooth'});
 }
@@ -324,7 +351,7 @@ function jumpToId() {
   const tid = parseInt((document.getElementById('ji-input')||{}).value, 10);
   if(isNaN(tid)) return;
   const idx = filteredRows.findIndex(r=>r.id===tid);
-  if(idx===-1){ alert('未找到 ID '+tid); return; }
+  if(idx===-1){ alert((isEn?'ID not found: ':'未找到 ID ')+tid); return; }
   goPage(Math.ceil((idx+1)/PAGE_SIZE));
   setTimeout(()=>{
     const tr = document.querySelector(`tr[data-id="${tid}"]`);
@@ -344,15 +371,16 @@ function renderAiProbChart(rows) {
   const high = aiRows.filter(r=>r.ai_prob_condition===1);
   const low  = aiRows.filter(r=>r.ai_prob_condition===0);
   const rate = arr => arr.length>0 ? +(arr.filter(r=>r.approve_strike===1).length/arr.length*100).toFixed(1) : 0;
-  if(!high.length && !low.length){
-    document.getElementById('aiProbEmpty').style.display='block'; return;
-  }
+  if(!high.length && !low.length){ document.getElementById('aiProbEmpty').style.display='block'; return; }
   new Chart(document.getElementById('cAiProb'), {
     type:'bar',
     data:{
-      labels:[`高置信度 (n=${high.length})`,`低置信度 (n=${low.length})`],
+      labels:[
+        isEn?`High Confidence (n=${high.length})`:`高置信度 (n=${high.length})`,
+        isEn?`Low Confidence (n=${low.length})` :`低置信度 (n=${low.length})`
+      ],
       datasets:[{
-        label:'批准率(%)',
+        label: isEn?'Approval Rate(%)':'批准率(%)',
         data:[rate(high), rate(low)],
         backgroundColor:['rgba(248,81,73,.75)','rgba(63,185,80,.75)'],
         borderRadius:6
@@ -374,28 +402,27 @@ function saveCpp() {
   const msg = document.getElementById('cpp-msg');
   if (isNaN(val) || val < 1 || val > 20) {
     msg.style.cssText = 'display:inline;color:var(--accent-red);';
-    msg.textContent = '请输入 1–20 之间的整数';
+    msg.textContent = isEn ? 'Enter an integer between 1 and 20' : '请输入 1–20 之间的整数';
     return;
   }
   fetch('/admin/settings', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ cases_per_participant: val })
   })
   .then(r => r.json())
   .then(d => {
     if (d.success) {
       msg.style.cssText = 'display:inline;color:var(--accent-green);';
-      msg.textContent = '已保存';
+      msg.textContent = isEn ? 'Saved' : '已保存';
       setTimeout(() => { msg.style.display = 'none'; }, 2500);
     } else {
       msg.style.cssText = 'display:inline;color:var(--accent-red);';
-      msg.textContent = d.error || '保存失败';
+      msg.textContent = d.error || (isEn ? 'Save failed' : '保存失败');
     }
   })
   .catch(() => {
     msg.style.cssText = 'display:inline;color:var(--accent-red);';
-    msg.textContent = '网络错误';
+    msg.textContent = isEn ? 'Network error' : '网络错误';
   });
 }
 
@@ -403,14 +430,49 @@ function saveCpp() {
 function doImport() {
   const file = document.getElementById('impFile').files[0];
   const res  = document.getElementById('impResult');
-  if (!file) { res.style.cssText='display:block;color:var(--accent-red)'; res.textContent='请先选择文件'; return; }
+  if (!file) { res.style.cssText='display:block;color:var(--accent-red)'; res.textContent = isEn?'Please select a file first':'请先选择文件'; return; }
   const fd = new FormData(); fd.append('file', file);
   fetch('/admin/import',{method:'POST',body:fd}).then(r=>r.json()).then(d=>{
     res.style.display='block';
     if (d.error) { res.style.color='var(--accent-red)'; res.textContent=d.error; return; }
     res.style.color='var(--accent-green)';
-    res.textContent=`成功导入 ${d.imported} 条。${d.errors.length?'警告：'+d.errors.slice(0,3).join('；'):''}`;
-  }).catch(()=>{ res.style.display='block'; res.style.color='var(--accent-red)'; res.textContent='上传失败'; });
+    res.textContent = (isEn?`Imported ${d.imported} record(s).`:`成功导入 ${d.imported} 条。`)
+      + (d.errors.length ? (isEn?'  Warnings: ':'警告：')+d.errors.slice(0,3).join('；') : '');
+  }).catch(()=>{ res.style.display='block'; res.style.color='var(--accent-red)'; res.textContent=isEn?'Upload failed':'上传失败'; });
+}
+
+// ── Language modal ──
+let langCode = '';
+function openLangModal() {
+  langCode = String(Math.floor(1000 + Math.random() * 9000));
+  document.getElementById('lang-code-display').textContent = langCode;
+  document.getElementById('lang-code-input').value = '';
+  document.getElementById('lang-msg').style.display = 'none';
+  document.getElementById('lang-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('lang-code-input').focus(), 80);
+}
+function closeLangModal() {
+  document.getElementById('lang-overlay').classList.remove('open');
+}
+function confirmLang() {
+  const input = document.getElementById('lang-code-input').value.trim();
+  const msg   = document.getElementById('lang-msg');
+  if (input !== langCode) {
+    msg.style.cssText = 'display:block;color:var(--accent-red);font-size:.88rem;margin-top:.75rem;';
+    msg.textContent = isEn ? 'Code mismatch, please retry' : '验证码不匹配，请重试';
+    return;
+  }
+  const newLang = isEn ? 'zh' : 'en';
+  fetch('/admin/language', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ lang: newLang })
+  })
+  .then(r => r.json())
+  .then(d => { if (d.success) location.reload(); })
+  .catch(() => {
+    msg.style.cssText = 'display:block;color:var(--accent-red);font-size:.88rem;margin-top:.75rem;';
+    msg.textContent = isEn ? 'Network error' : '网络错误';
+  });
 }
 
 // ── Clear database modal ──
@@ -427,69 +489,94 @@ function confirmClear() {
   const pw  = document.getElementById('clear-pw-input').value;
   const msg = document.getElementById('clear-msg');
   const btn = document.getElementById('clear-confirm-btn');
-
-  btn.disabled = true; btn.textContent = '处理中…';
+  btn.disabled = true; btn.textContent = isEn ? 'Processing...' : '处理中…';
   fetch('/admin/clear-data', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    method: 'POST', headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ password: pw })
   })
   .then(r => r.json())
   .then(d => {
-    btn.disabled = false; btn.textContent = '确认清空';
+    btn.disabled = false; btn.textContent = isEn ? 'Confirm Clear' : '确认清空';
     if (d.error) {
       msg.style.cssText = 'display:block;color:var(--accent-red);font-size:.88rem;margin-top:.75rem;';
       msg.textContent = d.error;
     } else {
-      closeClearModal();
-      allRows = [];
-      renderTable([]);
-      // Reload page after brief delay to refresh stats/charts
+      closeClearModal(); allRows = []; renderTable([]);
       setTimeout(() => location.reload(), 400);
     }
   })
   .catch(() => {
-    btn.disabled = false; btn.textContent = '确认清空';
+    btn.disabled = false; btn.textContent = isEn ? 'Confirm Clear' : '确认清空';
     msg.style.cssText = 'display:block;color:var(--accent-red);font-size:.88rem;margin-top:.75rem;';
-    msg.textContent = '网络错误，请重试';
+    msg.textContent = isEn ? 'Network error, please retry' : '网络错误，请重试';
   });
 }
-// Close on overlay click
 document.getElementById('clear-overlay').addEventListener('click', function(e) {
   if (e.target === this) closeClearModal();
 });
-// Enter key submits
+document.getElementById('lang-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeLangModal();
+});
 document.getElementById('clear-pw-input').addEventListener('keydown', function(e) {
   if (e.key === 'Enter') confirmClear();
   if (e.key === 'Escape') closeClearModal();
 });
+document.getElementById('lang-code-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') confirmLang();
+  if (e.key === 'Escape') closeLangModal();
+});
 </script>
 
+<!-- Language switch modal -->
+<div id="lang-overlay" class="modal-overlay">
+  <div id="lang-modal">
+    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;">
+      <div style="font-size:1.6rem;flex-shrink:0;">🌐</div>
+      <div>
+        <div style="font-weight:700;font-size:1.05rem;">{% if lang == 'en' %}Switch to 中文{% else %}Switch to English{% endif %}</div>
+        <div style="font-size:.83rem;color:var(--text-muted);margin-top:.15rem;">{% if lang == 'en' %}Enter the verification code below to confirm{% else %}请输入下方验证码以确认切换{% endif %}</div>
+      </div>
+    </div>
+    <div style="font-size:.82rem;color:var(--text-muted);margin-bottom:.2rem;">{% if lang == 'en' %}Verification code:{% else %}验证码：{% endif %}</div>
+    <div id="lang-code-display">——</div>
+    <div style="margin-bottom:1rem;">
+      <label for="lang-code-input">{% if lang == 'en' %}Re-enter the code above{% else %}请重新输入上方验证码{% endif %}</label>
+      <input type="text" id="lang-code-input" maxlength="4" placeholder="****"
+        style="text-align:center;font-size:1.4rem;letter-spacing:.3em;font-weight:700;">
+    </div>
+    <div id="lang-msg" style="display:none;"></div>
+    <div style="display:flex;gap:.75rem;margin-top:1.2rem;">
+      <button class="btn btn-primary" style="flex:1;" onclick="confirmLang()">{% if lang == 'en' %}Confirm{% else %}确认切换{% endif %}</button>
+      <button class="btn btn-ghost"   style="flex:1;" onclick="closeLangModal()">{% if lang == 'en' %}Cancel{% else %}取消{% endif %}</button>
+    </div>
+  </div>
+</div>
+
 <!-- Clear database modal -->
-<div id="clear-overlay">
+<div id="clear-overlay" class="modal-overlay">
   <div id="clear-modal">
     <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;">
       <div style="width:40px;height:40px;border-radius:50%;background:rgba(248,81,73,.15);border:1px solid rgba(248,81,73,.35);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">🗑</div>
       <div>
-        <div style="font-weight:700;font-size:1.05rem;">清空所有数据</div>
-        <div style="font-size:.83rem;color:var(--text-muted);margin-top:.15rem;">此操作将删除全部回复与参与者记录，情景题目不受影响</div>
+        <div style="font-weight:700;font-size:1.05rem;">{% if lang == 'en' %}Clear All Data{% else %}清空所有数据{% endif %}</div>
+        <div style="font-size:.83rem;color:var(--text-muted);margin-top:.15rem;">{% if lang == 'en' %}Responses and participant records will be deleted. Cases are unaffected.{% else %}此操作将删除全部回复与参与者记录，情景题目不受影响{% endif %}</div>
       </div>
     </div>
 
     <div style="background:rgba(248,81,73,.08);border:1px solid rgba(248,81,73,.25);border-radius:8px;padding:.75rem 1rem;margin-bottom:1.2rem;font-size:.85rem;color:var(--accent-red);">
-      ⚠ 此操作不可撤销，请确保已导出需要保留的数据。
+      ⚠ {% if lang == 'en' %}This action is irreversible. Make sure you have exported any data you need.{% else %}此操作不可撤销，请确保已导出需要保留的数据。{% endif %}
     </div>
 
     <div style="margin-bottom:1rem;">
-      <label for="clear-pw-input">请输入管理密码确认</label>
-      <input type="password" id="clear-pw-input" placeholder="管理密码">
+      <label for="clear-pw-input">{% if lang == 'en' %}Enter admin password to confirm{% else %}请输入管理密码确认{% endif %}</label>
+      <input type="password" id="clear-pw-input" placeholder="{% if lang == 'en' %}Admin password{% else %}管理密码{% endif %}">
     </div>
 
     <div id="clear-msg" style="display:none;"></div>
 
     <div style="display:flex;gap:.75rem;margin-top:1.2rem;">
-      <button id="clear-confirm-btn" class="btn btn-danger" style="flex:1;" onclick="confirmClear()">确认清空</button>
-      <button class="btn btn-ghost" style="flex:1;" onclick="closeClearModal()">取消</button>
+      <button id="clear-confirm-btn" class="btn btn-danger" style="flex:1;" onclick="confirmClear()">{% if lang == 'en' %}Confirm Clear{% else %}确认清空{% endif %}</button>
+      <button class="btn btn-ghost" style="flex:1;" onclick="closeClearModal()">{% if lang == 'en' %}Cancel{% else %}取消{% endif %}</button>
     </div>
   </div>
 </div>

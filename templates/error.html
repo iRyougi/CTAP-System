@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}访问错误 — 战场决策研究{% endblock %}
+{% block title %}{% if lang == 'en' %}Access Error — Battlefield Decision Study{% else %}访问错误 — 战场决策研究{% endif %}{% endblock %}
 {% block body %}
 <div class="page-wrap" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:70vh;text-align:center;">
-  <div class="badge badge-red" style="margin-bottom:1rem;">访问错误</div>
-  <h1 style="margin-bottom:.8rem;">无法加载问卷</h1>
+  <div class="badge badge-red" style="margin-bottom:1rem;">{% if lang == 'en' %}Access Error{% else %}访问错误{% endif %}</div>
+  <h1 style="margin-bottom:.8rem;">{% if lang == 'en' %}Unable to Load Survey{% else %}无法加载问卷{% endif %}</h1>
   <p class="muted" style="max-width:420px;margin:0 auto 1.5rem;line-height:1.8;">{{ message }}</p>
-  <a href="/" class="btn btn-ghost">返回首页</a>
+  <a href="/" class="btn btn-ghost">{% if lang == 'en' %}Back to Home{% else %}返回首页{% endif %}</a>
 </div>
 {% endblock %}

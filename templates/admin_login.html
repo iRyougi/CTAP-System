@@ -1,23 +1,28 @@
 {% extends "base.html" %}
-{% block title %}管理员登录 — 研究后台{% endblock %}
+{% block title %}{% if lang == 'en' %}Admin Login — Research Dashboard{% else %}管理员登录 — 研究后台{% endif %}{% endblock %}
 {% block body %}
 <div class="page-wrap" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;">
   <div style="width:100%;max-width:400px;">
     <div style="text-align:center;margin-bottom:2rem;">
-      <div class="badge badge-purple" style="margin-bottom:.8rem;">研究管理后台</div>
-      <h1 style="font-size:1.6rem;">管理员入口</h1>
+      <div class="badge badge-purple" style="margin-bottom:.8rem;">{% if lang == 'en' %}Research Admin{% else %}研究管理后台{% endif %}</div>
+      <h1 style="font-size:1.6rem;">{% if lang == 'en' %}Admin Login{% else %}管理员入口{% endif %}</h1>
     </div>
     <div class="card">
       {% if error %}<div class="alert alert-error" style="margin-bottom:1.2rem;">{{ error }}</div>{% endif %}
       <form method="POST" action="/admin/auth">
         <div style="margin-bottom:1.2rem;">
-          <label for="pw">访问密码</label>
-          <input type="password" id="pw" name="password" placeholder="请输入管理密码" autofocus autocomplete="current-password">
+          <label for="pw">{% if lang == 'en' %}Password{% else %}访问密码{% endif %}</label>
+          <input type="password" id="pw" name="password"
+            placeholder="{% if lang == 'en' %}Enter admin password{% else %}请输入管理密码{% endif %}"
+            autofocus autocomplete="current-password">
         </div>
-        <button type="submit" class="btn btn-primary w-full">进入后台</button>
+        <button type="submit" class="btn btn-primary w-full">{% if lang == 'en' %}Enter Dashboard{% else %}进入后台{% endif %}</button>
       </form>
     </div>
-    <p class="muted text-center" style="margin-top:1.2rem;font-size:.82rem;"><a href="mailto:iryougi@iryougi.com" style="color:inherit;text-decoration:underline;text-underline-offset:3px;">CTAP Project · Group 12</a> · 仅限研究团队访问</p>
+    <p class="muted text-center" style="margin-top:1.2rem;font-size:.82rem;">
+      <a href="mailto:iryougi@iryougi.com" style="color:inherit;text-decoration:underline;text-underline-offset:3px;">CTAP Project · Group 12</a>
+      · {% if lang == 'en' %}Research team access only{% else %}仅限研究团队访问{% endif %}
+    </p>
   </div>
 </div>
 {% endblock %}
